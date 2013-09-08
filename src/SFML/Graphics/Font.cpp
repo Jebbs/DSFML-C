@@ -65,12 +65,15 @@ sfFont* sfFont_createFromMemory(const void* data, size_t sizeInBytes)
 
 
 
-sfFont* sfFont_createFromStream(void* stream)
+sfFont* sfFont_createFromStream(DStream* stream)
 {
-    CSFML_CHECK_RETURN(stream, NULL);
+   // CSFML_CHECK_RETURN(stream, NULL);
 
     sfFont* font = new sfFont;
-    font->Stream = reinterpret_cast<sf::InputStream*>(stream);
+
+     
+
+    font->Stream = new sfmlStream(stream);
     if (!font->This.loadFromStream(*font->Stream))
     {
         delete font;
@@ -93,6 +96,7 @@ sfFont* sfFont_copy(const sfFont* font)
 
 void sfFont_destroy(sfFont* font)
 {
+    delete font->Stream;
     delete font;
 }
 

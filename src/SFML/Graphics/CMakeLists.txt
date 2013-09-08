@@ -7,6 +7,8 @@ set(SRC
  ${INCROOT}/Export.h
  ${SRCROOT}/CreateRenderStates.hpp
  ${SRCROOT}/CreateTransform.hpp
+ ${INCROOT}/Err.h
+ ${SRCROOT}/Err.cpp
  ${SRCROOT}/Font.cpp
  ${SRCROOT}/FontStruct.h
  ${INCROOT}/Font.h

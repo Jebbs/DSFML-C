@@ -88,14 +88,15 @@ sfImage* sfImage_createFromMemory(const void* data, size_t sizeInBytes)
 }
 
 
-sfImage* sfImage_createFromStream(void* stream)
+sfImage* sfImage_createFromStream(DStream* stream)
 {
-    CSFML_CHECK_RETURN(stream, NULL);
+   // CSFML_CHECK_RETURN(stream, NULL);
 
     sfImage* image = new sfImage;
 
+    sfmlStream Stream = sfmlStream(stream);
     
-    if (!image->This.loadFromStream(*reinterpret_cast<sf::InputStream*>(stream)))
+    if (!image->This.loadFromStream(Stream))
     {
         delete image;
         image = NULL;

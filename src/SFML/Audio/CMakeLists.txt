@@ -10,6 +10,8 @@ set(SRC
  ${SRCROOT}/AudioDevice.cpp
  ${SRCROOT}/AudioDevice.hpp
  ${INCROOT}/Export.h
+ ${INCROOT}/Err.h
+ ${SRCROOT}/Err.cpp
  ${SRCROOT}/Listener.cpp
  ${INCROOT}/Listener.h
  ${SRCROOT}/Sound.cpp

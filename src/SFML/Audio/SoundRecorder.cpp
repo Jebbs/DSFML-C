@@ -56,12 +56,12 @@ void sfSoundRecorder_startCapture(sfSoundRecorder* recorder)
 
 DInt sfSoundRecorder_getNumAvailableSamples(sfSoundRecorder* recorder)
 {
-    recorder->This.getSampleNumber();
+    return recorder->This.getSampleNumber();
 }
 
 DShort* sfSoundRecorder_getSamplePointer(sfSoundRecorder* recorder, DInt numSamples)
 {
-    recorder->This.getSamplePointer(numSamples);
+    return recorder->This.getSamplePointer(numSamples);
 }
 
 void sfSoundRecorder_stopCapture(sfSoundRecorder* recorder)

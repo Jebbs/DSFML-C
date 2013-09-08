@@ -29,54 +29,34 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 */
 
 //Headers
-#include <SFML/Audio/Listener.h>
-#include <SFML/Audio/Listener.hpp>
-#include <SFML/System/Vector3.hpp>
+#include <SFML/Window/Err.h>
+#include <SFML/System/Err.hpp>
+#include <sstream>
+#include <string>
 
-void sfListener_setGlobalVolume(float volume)
+
+namespace
 {
-    sf::Listener::setGlobalVolume(volume);
+    std::ostringstream outputStream;//stream sf::err() get's redirected to
+    std::string outputString;//string for storing output
 }
 
 
-float sfListener_getGlobalVolume(void)
+void sfErrWindow_redirect(void)
 {
-    return sf::Listener::getGlobalVolume();
+    //redirect sf::err() to write to outputStream
+    sf::err().rdbuf(outputStream.rdbuf());
 }
 
 
-void sfListener_setPosition(float x, float y, float z)
+const char* sfErrWindow_getOutput(void)
 {
+    //get the contents of outputstream
+    outputString = outputStream.str();
 
-    sf::Listener::setPosition(x,y,z);
+    //and then clear the stream
+    outputStream.str("");
+
+    return outputString.c_str();
 }
 
-
-void sfListener_getPosition(float* x, float* y, float* z)
-{
-    sf::Vector3f temp;
-
-    temp = sf::Listener::getPosition();
-
-    *x = temp.x;
-    *y = temp.y;
-    *z = temp.z;
-}
-
-
-void sfListener_setDirection(float x, float y, float z)
-{
-    sf::Listener::setDirection(x,y,z);
-}
-
-
-void sfListener_getDirection(float* x, float* y, float* z)
-{
-    sf::Vector3f temp;
-
-    temp = sf::Listener::getDirection();
-
-    *x = temp.x;
-    *y = temp.y;
-    *z = temp.z;
-}

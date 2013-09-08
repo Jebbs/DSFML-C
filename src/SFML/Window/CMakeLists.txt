@@ -9,6 +9,8 @@ set(SRC
     ${SRCROOT}/ContextStruct.h
     ${INCROOT}/Context.h
     ${INCROOT}/Event.h
+    ${INCROOT}/Err.h
+    ${SRCROOT}/Err.cpp
     ${SRCROOT}/Joystick.cpp
     ${INCROOT}/Joystick.h
     ${SRCROOT}/Keyboard.cpp

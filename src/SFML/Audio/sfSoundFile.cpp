@@ -72,25 +72,29 @@ DBool sfSoundFile_openReadFromFile(sfSoundFile* file, const char* filename)
 
 DBool sfSoundFile_openReadFromMemory(sfSoundFile* file,void* data, DLong sizeInBytes)
 {
-    file->This.openRead(data,(size_t)sizeInBytes);
+    bool toReturn = file->This.openRead(data,(size_t)sizeInBytes);
+
+    return toReturn?DTrue:DFalse;
 }
 
 DBool sfSoundFile_openReadFromStream(sfSoundFile* file, void* stream)
 {
     sf::InputStream* temp = (sf::InputStream*)stream;
 
-    file->This.openRead(*temp);
+    bool toReturn = file->This.openRead(*temp);
+
+    return toReturn?DTrue:DFalse;
 }
 
 DBool sfSoundFile_openWrite(sfSoundFile* file, const char* filename,DUint channelCount,DUint sampleRate)
 {
-    file->This.openWrite(filename,channelCount,sampleRate);
+    bool toReturn = file->This.openWrite(filename,channelCount,sampleRate);
+
+    return toReturn?DTrue:DFalse;
 }
 
 DLong sfSoundFile_read(sfSoundFile* file, DShort* data, DLong sampleCount)
 {
-
-
     return file->This.read(data, (size_t)sampleCount);
 }
 
