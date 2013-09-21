@@ -34,7 +34,7 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 // Headers
 #include <SFML/Graphics/Export.h>
 #include <SFML/Graphics/Types.h>
-#include <SFML/System/InputStream.hpp>
+#include <SFML/System/DStream.hpp>
 #include <stddef.h>
 
 
@@ -54,7 +54,7 @@ DSFML_GRAPHICS_API sfImage* sfImage_createFromFile(const char* filename);
 DSFML_GRAPHICS_API sfImage* sfImage_createFromMemory(const void* data, size_t size);
 
 //Create an image from a custom stream
-DSFML_GRAPHICS_API sfImage* sfImage_createFromStream(void* stream);
+DSFML_GRAPHICS_API sfImage* sfImage_createFromStream(DStream* stream);
 
 //Copy an existing image
 DSFML_GRAPHICS_API sfImage* sfImage_copy(const sfImage* image);

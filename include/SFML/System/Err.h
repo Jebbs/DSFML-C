@@ -40,5 +40,4 @@ DSFML_SYSTEM_API void sfErr_redirect(void);
 //Get the current contents of sf::err()
 DSFML_SYSTEM_API const char* sfErr_getOutput(void);
 
-
 #endif // DSFML_ERR_H

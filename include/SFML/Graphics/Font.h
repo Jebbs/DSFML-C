@@ -35,6 +35,7 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 // Headers
 #include <SFML/Graphics/Export.h>
 #include <SFML/Graphics/Types.h>
+#include <SFML/System/DStream.hpp>
 #include <stddef.h>
 
 
@@ -48,7 +49,7 @@ DSFML_GRAPHICS_API sfFont* sfFont_createFromMemory(const void* data, size_t size
 
 
 //Create a new image font a custom stream
-DSFML_GRAPHICS_API sfFont* sfFont_createFromStream(void* stream);
+DSFML_GRAPHICS_API sfFont* sfFont_createFromStream(DStream* stream);
 
 
 // Copy an existing font
