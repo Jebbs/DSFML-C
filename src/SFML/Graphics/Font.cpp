@@ -96,7 +96,6 @@ sfFont* sfFont_copy(const sfFont* font)
 
 void sfFont_destroy(sfFont* font)
 {
-    delete font->Stream;
     delete font;
 }
 
