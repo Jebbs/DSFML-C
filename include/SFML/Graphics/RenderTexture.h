@@ -91,7 +91,7 @@ DSFML_GRAPHICS_API void sfRenderTexture_popGLStates(sfRenderTexture* renderTextu
 DSFML_GRAPHICS_API void sfRenderTexture_resetGLStates(sfRenderTexture* renderTexture);
 
 //  Get the target texture of a render texture
-DSFML_GRAPHICS_API const sfTexture* sfRenderTexture_getTexture(const sfRenderTexture* renderTexture);
+DSFML_GRAPHICS_API sfTexture* sfRenderTexture_getTexture(const sfRenderTexture* renderTexture);
 
 //  Enable or disable the smooth filter on a render texture
 DSFML_GRAPHICS_API void sfRenderTexture_setSmooth(sfRenderTexture* renderTexture, DBool smooth);

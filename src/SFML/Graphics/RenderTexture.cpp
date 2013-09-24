@@ -99,6 +99,7 @@ sfView* sfRenderTexture_getView(const sfRenderTexture* renderTexture)
 {
     CSFML_CHECK_RETURN(renderTexture, NULL);
 
+    //Safe because the pointer will only be used in a const instance
     return const_cast<sfView*>(&renderTexture->CurrentView);
 }
 
@@ -107,6 +108,7 @@ sfView* sfRenderTexture_getDefaultView(const sfRenderTexture* renderTexture)
 {
     CSFML_CHECK_RETURN(renderTexture, NULL);
 
+    //Safe because the pointer will only be used in a const instance
     return const_cast<sfView*>(&renderTexture->DefaultView);
 }
 
@@ -195,11 +197,12 @@ void sfRenderTexture_resetGLStates(sfRenderTexture* renderTexture)
 }
 
 
-const sfTexture* sfRenderTexture_getTexture(const sfRenderTexture* renderTexture)
+sfTexture* sfRenderTexture_getTexture(const sfRenderTexture* renderTexture)
 {
     CSFML_CHECK_RETURN(renderTexture, NULL);
 
-    return renderTexture->Target;
+    //Safe because the pointer will only be used in a const instance
+    return const_cast<sfTexture*>(renderTexture->Target);
 }
 
 
