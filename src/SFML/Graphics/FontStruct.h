@@ -40,7 +40,8 @@
 struct sfFont
 {
     sf::Font This;
-    mutable std::map<unsigned int, sfTexture> Textures;
+    //mutable std::map<unsigned int, sfTexture> Textures;
+    mutable sfTexture* fontTexture;
     sf::InputStream* Stream;
 };
 

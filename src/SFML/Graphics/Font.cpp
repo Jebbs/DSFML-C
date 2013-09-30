@@ -46,6 +46,8 @@ sfFont* sfFont_createFromFile(const char* filename)
         font = NULL;
     }
 
+    font->fontTexture = new sfTexture;
+
     return font;
 }
 
@@ -59,6 +61,8 @@ sfFont* sfFont_createFromMemory(const void* data, size_t sizeInBytes)
         delete font;
         font = NULL;
     }
+
+    font->fontTexture = new sfTexture;
 
     return font;
 }
@@ -96,6 +100,7 @@ sfFont* sfFont_copy(const sfFont* font)
 
 void sfFont_destroy(sfFont* font)
 {
+    
     delete font;
 }
 
@@ -137,11 +142,16 @@ DInt sfFont_getLineSpacing(const sfFont* font, DUint characterSize)
 
 
 
-sfTexture* sfFont_getTexture(const sfFont* font, DUint characterSize)
+sfTexture* sfFont_getTexturePtr(const sfFont* font)//, DUint characterSize)
 {
     CSFML_CHECK_RETURN(font, NULL);
 
-    *font->Textures[characterSize].This = font->This.getTexture(characterSize);
+    
 
-    return const_cast<sfTexture*>(&font->Textures[characterSize]);
+    return font->fontTexture;// const_cast<sfTexture*>(&font->Textures[characterSize]);
+}
+
+void sfFont_updateTexture(const sfFont* font, DUint characterSize)
+{
+    *font->fontTexture->This = font->This.getTexture(characterSize);
 }

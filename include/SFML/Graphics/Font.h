@@ -72,8 +72,11 @@ DSFML_GRAPHICS_API DInt sfFont_getKerning(const sfFont* font, DUint first, DUint
 DSFML_GRAPHICS_API DInt sfFont_getLineSpacing(const sfFont* font, DUint characterSize);
 
 
-//Get the texture containing the glyphs of a given size in a font
-DSFML_GRAPHICS_API sfTexture* sfFont_getTexture(const sfFont* font, DUint characterSize);
+//Get the texture pointer for a particular font
+DSFML_GRAPHICS_API sfTexture* sfFont_getTexturePtr(const sfFont* font);
+
+//Update the internal texture associated with the font
+DSFML_GRAPHICS_API void sfFont_updateTexture(const sfFont* font, DUint characterSize);
 
 
 #endif // SFML_IMAGE_H
