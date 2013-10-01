@@ -77,11 +77,11 @@ DBool sfSoundFile_openReadFromMemory(sfSoundFile* file,void* data, DLong sizeInB
     return toReturn?DTrue:DFalse;
 }
 
-DBool sfSoundFile_openReadFromStream(sfSoundFile* file, void* stream)
+DBool sfSoundFile_openReadFromStream(sfSoundFile* file, DStream* stream)
 {
-    sf::InputStream* temp = (sf::InputStream*)stream;
+    sfmlStream Stream = sfmlStream(stream);
 
-    bool toReturn = file->This.openRead(*temp);
+    bool toReturn = file->This.openRead(Stream);
 
     return toReturn?DTrue:DFalse;
 }

@@ -34,6 +34,7 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 //Headers
 #include <SFML/Audio/Export.h>
 #include <SFML/Audio/Types.h>
+#include <SFML/System/DStream.hpp>
 
 //Creates the sound file
 DSFML_AUDIO_API sfSoundFile* sfSoundFile_create();
@@ -57,7 +58,7 @@ DSFML_AUDIO_API DBool sfSoundFile_openReadFromFile(sfSoundFile* file, const char
 DSFML_AUDIO_API DBool sfSoundFile_openReadFromMemory(sfSoundFile* file,void* data, DLong sizeInBytes);
 
 //Open a sound file from a custom stream for reading
-DSFML_AUDIO_API DBool sfSoundFile_openReadFromStream(sfSoundFile* file, void* stream);
+DSFML_AUDIO_API DBool sfSoundFile_openReadFromStream(sfSoundFile* file, DStream* stream);
 
 //Open a sound file for writting
 DSFML_AUDIO_API DBool sfSoundFile_openWrite(sfSoundFile* file, const char* filename,DUint channelCount,DUint sampleRate);
