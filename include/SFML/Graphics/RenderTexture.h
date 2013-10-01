@@ -72,9 +72,6 @@ DSFML_GRAPHICS_API void sfRenderTexture_mapPixelToCoords(const sfRenderTexture* 
 // Convert a point from world coordinates to texture coordinates
 DSFML_GRAPHICS_API void sfRenderTexture_mapCoordsToPixel(const sfRenderTexture* renderTexture, float xIn, float yIn, DInt* xOut, DInt* yOut, const sfView* targetView);
 
-//  Draw a drawable object to the render-target
-DSFML_GRAPHICS_API void sfRenderTexture_drawText(sfRenderTexture* renderTexture, const sfText* object, DInt blendMode,const float* transform, const sfTexture* texture, const sfShader* shader);
-
 
 //  Draw primitives defined by an array of vertices to a render texture
 DSFML_GRAPHICS_API void sfRenderTexture_drawPrimitives(sfRenderTexture* renderTexture,

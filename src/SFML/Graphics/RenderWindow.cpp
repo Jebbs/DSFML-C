@@ -34,8 +34,6 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 #include <SFML/Graphics/RenderWindow.h>
 #include <SFML/Graphics/RenderWindowStruct.h>
 #include <SFML/Graphics/ImageStruct.h>
-//#include <SFML/Graphics/TextStruct.h>
-
 #include <SFML/Graphics/CreateRenderStates.hpp>
 #include <SFML/Internal.h>
 #include <SFML/ConvertEvent.h>
@@ -399,14 +397,6 @@ void sfRenderWindow_mapCoordsToPixel(const sfRenderWindow* renderWindow, float x
     *xOut = sfmlPoint.x;
     *yOut = sfmlPoint.y;
 }
-
-
-
-//void sfRenderWindow_drawText(sfRenderWindow* renderWindow, const sfText* object, DInt blendMode,const float* transform, const sfTexture* texture, const sfShader* shader)
-//{
-    //CSFML_CHECK(object);
-    //CSFML_CALL(renderWindow, draw(object->This, createRenderStates(blendMode, transform, texture, shader)));
-//}
 
 
 

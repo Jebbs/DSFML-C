@@ -40,6 +40,7 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 sfFont* sfFont_createFromFile(const char* filename)
 {
     sfFont* font = new sfFont;
+
     if (!font->This.loadFromFile(filename))
     {
         delete font;
@@ -84,6 +85,8 @@ sfFont* sfFont_createFromStream(DStream* stream)
         font = NULL;
     }
 
+    font->fontTexture = new sfTexture;
+
     return font;
 }
 
@@ -100,7 +103,7 @@ sfFont* sfFont_copy(const sfFont* font)
 
 void sfFont_destroy(sfFont* font)
 {
-    
+    //purposefully do not delete the texture as that is handled by the D Texture class
     delete font;
 }
 
@@ -146,9 +149,7 @@ sfTexture* sfFont_getTexturePtr(const sfFont* font)//, DUint characterSize)
 {
     CSFML_CHECK_RETURN(font, NULL);
 
-    
-
-    return font->fontTexture;// const_cast<sfTexture*>(&font->Textures[characterSize]);
+    return font->fontTexture;
 }
 
 void sfFont_updateTexture(const sfFont* font, DUint characterSize)

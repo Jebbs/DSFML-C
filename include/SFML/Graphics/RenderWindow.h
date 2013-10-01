@@ -136,9 +136,6 @@ DSFML_GRAPHICS_API void sfRenderWindow_mapPixelToCoords(const sfRenderWindow* re
 //Convert a point from world coordinates to window coordinates
 DSFML_GRAPHICS_API void sfRenderWindow_mapCoordsToPixel(const sfRenderWindow* renderWindow, float xIn, float yIn, DInt* xOut, DInt* yOut, const sfView* targetView);
 
-//Draw a drawable object to the render-target
-DSFML_GRAPHICS_API void sfRenderWindow_drawText(sfRenderWindow* renderWindow, const sfText* object, DInt blendMode,const float* transform, const sfTexture* texture, const sfShader* shader);
-
 
 //Draw primitives defined by an array of vertices to a render window
 DSFML_GRAPHICS_API void sfRenderWindow_drawPrimitives(sfRenderWindow* renderWindow,

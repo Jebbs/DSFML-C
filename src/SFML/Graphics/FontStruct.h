@@ -31,7 +31,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/TextureStruct.h>
 #include <SFML/System/InputStream.hpp>
-#include <map>
+//#include <map>
 
 
 ////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@
 struct sfFont
 {
     sf::Font This;
-    //mutable std::map<unsigned int, sfTexture> Textures;
+    //possibly use a map for different sizes like original CSFML
     mutable sfTexture* fontTexture;
     sf::InputStream* Stream;
 };
