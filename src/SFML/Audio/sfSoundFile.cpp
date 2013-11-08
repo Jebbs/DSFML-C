@@ -79,9 +79,9 @@ DBool sfSoundFile_openReadFromMemory(sfSoundFile* file,void* data, DLong sizeInB
 
 DBool sfSoundFile_openReadFromStream(sfSoundFile* file, DStream* stream)
 {
-    sfmlStream Stream = sfmlStream(stream);
+    file->stream = sfmlStream(stream);
 
-    bool toReturn = file->This.openRead(Stream);
+    bool toReturn = file->This.openRead(file->stream);
 
     return toReturn?DTrue:DFalse;
 }

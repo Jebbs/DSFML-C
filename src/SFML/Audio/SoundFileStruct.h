@@ -34,12 +34,14 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <SFML/Audio/SoundFile.hpp>
+#include <SFML/System/DStream.hpp>
 
 
 //Create a wrapper around a sf::priv::SoundFile
 struct sfSoundFile
 {
     sf::priv::SoundFile This;
+    sfmlStream stream;
 };
 
 
