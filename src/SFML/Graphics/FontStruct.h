@@ -42,7 +42,7 @@ struct sfFont
     sf::Font This;
     //possibly use a map for different sizes like original CSFML
     mutable sfTexture* fontTexture;
-    sf::InputStream* Stream;
+    sfmlStream Stream;
 };
 
 

@@ -78,8 +78,8 @@ sfFont* sfFont_createFromStream(DStream* stream)
 
      
 
-    font->Stream = new sfmlStream(stream);
-    if (!font->This.loadFromStream(*font->Stream))
+    font->Stream = sfmlStream(stream);
+    if (!font->This.loadFromStream(font->Stream))
     {
         delete font;
         font = NULL;
