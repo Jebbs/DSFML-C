@@ -49,7 +49,6 @@ sfRenderTexture* sfRenderTexture_create(DUint width, DUint height, DBool depthBu
 
 void sfRenderTexture_destroy(sfRenderTexture* renderTexture)
 {
-    delete renderTexture->Target;
     delete renderTexture;
 }
 
