@@ -45,6 +45,7 @@ sfFont* sfFont_createFromFile(const char* filename)
     {
         delete font;
         font = NULL;
+        return font;
     }
 
     font->fontTexture = new sfTexture;
@@ -61,6 +62,7 @@ sfFont* sfFont_createFromMemory(const void* data, size_t sizeInBytes)
     {
         delete font;
         font = NULL;
+        return font;
     }
 
     font->fontTexture = new sfTexture;
@@ -83,6 +85,7 @@ sfFont* sfFont_createFromStream(DStream* stream)
     {
         delete font;
         font = NULL;
+        return font;
     }
 
     font->fontTexture = new sfTexture;
