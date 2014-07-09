@@ -1,209 +1,155 @@
-/*
-DSFML - The Simple and Fast Multimedia Library for D
+////////////////////////////////////////////////////////////
+//
+// SFML - Simple and Fast Multimedia Library
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
+//
+// This software is provided 'as-is', without any express or implied warranty.
+// In no event will the authors be held liable for any damages arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it freely,
+// subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented;
+//    you must not claim that you wrote the original software.
+//    If you use this software in a product, an acknowledgment
+//    in the product documentation would be appreciated but is not required.
+//
+// 2. Altered source versions must be plainly marked as such,
+//    and must not be misrepresented as being the original software.
+//
+// 3. This notice may not be removed or altered from any source distribution.
+//
+////////////////////////////////////////////////////////////
 
-Copyright (c) <2013> <Jeremy DeHaan>
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose, including commercial applications,
-and to alter it and redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
-If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution
-
-
-***All code is based on code written by Laurent Gomila***
-
-
-External Libraries Used:
-
-SFML - The Simple and Fast Multimedia Library
-Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
-
-All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license.php
-*/
-
+////////////////////////////////////////////////////////////
 // Headers
-#include <SFML/Graphics/RenderTexture.h>
-#include <SFML/Graphics/RenderTextureStruct.h>
-#include <SFML/Graphics/CreateRenderStates.hpp>
-#include <SFML/Internal.h>
+////////////////////////////////////////////////////////////
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/RenderTextureImplFBO.hpp>
+#include <SFML/Graphics/RenderTextureImplDefault.hpp>
+#include <SFML/System/Err.hpp>
 
 
-sfRenderTexture* sfRenderTexture_create(DUint width, DUint height, DBool depthBuffer)
+namespace sf
 {
-    sfRenderTexture* renderTexture = new sfRenderTexture;
-    renderTexture->This.create(width, height, depthBuffer == DTrue);
-    renderTexture->Target = new sfTexture(const_cast<sf::Texture*>(&renderTexture->This.getTexture()));
-    renderTexture->DefaultView.This = renderTexture->This.getDefaultView();
-    renderTexture->CurrentView.This = renderTexture->This.getView();
-
-    return renderTexture;
-}
-
-
-void sfRenderTexture_destroy(sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+RenderTexture::RenderTexture() :
+m_impl(NULL)
 {
-    delete renderTexture;
-}
-
-
-void sfRenderTexture_getSize(const sfRenderTexture* renderTexture, DUint* x, DUint* y)
-{
-    //sfVector2u size = {0, 0};
-    //CSFML_CHECK_RETURN(renderTexture, size);
-
-    sf::Vector2u sfmlSize = renderTexture->This.getSize();
-    *x = sfmlSize.x;
-    *y = sfmlSize.y;
 
 }
 
 
-DBool sfRenderTexture_setActive(sfRenderTexture* renderTexture, DBool active)
+////////////////////////////////////////////////////////////
+RenderTexture::~RenderTexture()
 {
-    CSFML_CALL_RETURN(renderTexture, setActive(active == DTrue), DFalse);
+    delete m_impl;
 }
 
 
-void sfRenderTexture_display(sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+bool RenderTexture::create(unsigned int width, unsigned int height, bool depthBuffer)
 {
-    CSFML_CALL(renderTexture, display());
-}
+    // Create the texture
+    if (!m_texture.create(width, height))
+    {
+        err() << "Impossible to create render texture (failed to create the target texture)" << std::endl;
+        return false;
+    }
 
+    // We disable smoothing by default for render textures
+    setSmooth(false);
 
-void sfRenderTexture_clear(sfRenderTexture* renderTexture, DUbyte r, DUbyte g, DUbyte b, DUbyte a)
-{
-    sf::Color SFMLColor(r, g, b, a);
-
-    CSFML_CALL(renderTexture, clear(SFMLColor));
-}
-
-
-void sfRenderTexture_setView(sfRenderTexture* renderTexture, const sfView* view)
-{
-    CSFML_CHECK(view);
-    CSFML_CALL(renderTexture, setView(view->This));
-    renderTexture->CurrentView.This = view->This;
-}
-
-
-sfView* sfRenderTexture_getView(const sfRenderTexture* renderTexture)
-{
-    CSFML_CHECK_RETURN(renderTexture, NULL);
-
-    //Safe because the pointer will only be used in a const instance
-    return const_cast<sfView*>(&renderTexture->CurrentView);
-}
-
-
-sfView* sfRenderTexture_getDefaultView(const sfRenderTexture* renderTexture)
-{
-    CSFML_CHECK_RETURN(renderTexture, NULL);
-
-    //Safe because the pointer will only be used in a const instance
-    return const_cast<sfView*>(&renderTexture->DefaultView);
-}
-
-
-void sfRenderTexture_getViewport(const sfRenderTexture* renderTexture, const sfView* view, DInt* rectLeft, DInt* rectTop, DInt* rectWidth, DInt* rectHeight)
-{
-    //sfIntRect rect = {0, 0, 0, 0};
-   // CSFML_CHECK_RETURN(view, rect);
-    //CSFML_CHECK_RETURN(renderTexture, rect);
-
-    sf::IntRect SFMLrect = renderTexture->This.getViewport(view->This);
-    *rectLeft   = SFMLrect.left;
-    *rectTop    = SFMLrect.top;
-    *rectWidth  = SFMLrect.width;
-    *rectHeight = SFMLrect.height;
-
-}
-
-
-void sfRenderTexture_mapPixelToCoords(const sfRenderTexture* renderTexture, DInt xIn, DInt yIn, float* xOut, float* yOut, const sfView* targetView)
-{
-   // sfVector2f result = {0, 0};
-    //CSFML_CHECK_RETURN(renderTexture, result);
-
-    sf::Vector2f sfmlPoint;
-    if (targetView)
-        sfmlPoint = renderTexture->This.mapPixelToCoords(sf::Vector2i(xIn, yIn), targetView->This);
+    // Create the implementation
+    delete m_impl;
+    if (priv::RenderTextureImplFBO::isAvailable())
+    {
+        // Use frame-buffer object (FBO)
+        m_impl = new priv::RenderTextureImplFBO;
+    }
     else
-        sfmlPoint = renderTexture->This.mapPixelToCoords(sf::Vector2i(xIn, yIn));
+    {
+        // Use default implementation
+        m_impl = new priv::RenderTextureImplDefault;
+    }
 
-    *xOut = sfmlPoint.x;
-    *xOut = sfmlPoint.y;
+    // Initialize the render texture
+    if (!m_impl->create(width, height, m_texture.m_texture, depthBuffer))
+        return false;
 
-   // return result;
+    // We can now initialize the render target part
+    RenderTarget::initialize();
+
+    return true;
 }
 
 
-void sfRenderTexture_mapCoordsToPixel(const sfRenderTexture* renderTexture, float xIn, float yIn, DInt* xOut, DInt* yOut, const sfView* targetView)
+////////////////////////////////////////////////////////////
+void RenderTexture::setSmooth(bool smooth)
 {
-    //sfVector2i result = {0, 0};
-    //CSFML_CHECK_RETURN(renderTexture, result);
-
-    sf::Vector2i sfmlPoint;
-    if (targetView)
-        sfmlPoint = renderTexture->This.mapCoordsToPixel(sf::Vector2f(xIn, yIn), targetView->This);
-    else
-        sfmlPoint = renderTexture->This.mapCoordsToPixel(sf::Vector2f(xIn, yIn));
-
-    *xOut = sfmlPoint.x;
-    *yOut = sfmlPoint.y;
-
+    m_texture.setSmooth(smooth);
 }
 
 
-
-void sfRenderTexture_drawPrimitives(sfRenderTexture* renderTexture,
-                                    const void* vertices, DUint vertexCount,
-                                    DInt type, DInt blendMode,const float* transform, const sfTexture* texture, const sfShader* shader)
+////////////////////////////////////////////////////////////
+bool RenderTexture::isSmooth() const
 {
-    CSFML_CALL(renderTexture, draw(reinterpret_cast<const sf::Vertex*>(vertices), vertexCount, static_cast<sf::PrimitiveType>(type), createRenderStates(blendMode, transform, texture, shader)));
+    return m_texture.isSmooth();
 }
 
 
-void sfRenderTexture_pushGLStates(sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+void RenderTexture::setRepeated(bool repeated)
 {
-    CSFML_CALL(renderTexture, pushGLStates());
+    m_texture.setRepeated(repeated);
 }
 
 
-void sfRenderTexture_popGLStates(sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+bool RenderTexture::isRepeated() const
 {
-    CSFML_CALL(renderTexture, popGLStates());
+    return m_texture.isRepeated();
 }
 
 
-void sfRenderTexture_resetGLStates(sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+bool RenderTexture::setActive(bool active)
 {
-    CSFML_CALL(renderTexture, resetGLStates());
+    return m_impl && m_impl->activate(active);
 }
 
 
-sfTexture* sfRenderTexture_getTexture(const sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+void RenderTexture::display()
 {
-    CSFML_CHECK_RETURN(renderTexture, NULL);
-
-    //Safe because the pointer will only be used in a const instance
-    return const_cast<sfTexture*>(renderTexture->Target);
+    // Update the target texture
+    if (setActive(true))
+    {
+        m_impl->updateTexture(m_texture.m_texture);
+        m_texture.m_pixelsFlipped = true;
+    }
 }
 
 
-void sfRenderTexture_setSmooth(sfRenderTexture* renderTexture, DBool smooth)
+////////////////////////////////////////////////////////////
+Vector2u RenderTexture::getSize() const
 {
-    CSFML_CALL(renderTexture, setSmooth(smooth == DTrue));
+    return m_texture.getSize();
 }
 
 
-DBool sfRenderTexture_isSmooth(const sfRenderTexture* renderTexture)
+////////////////////////////////////////////////////////////
+const Texture& RenderTexture::getTexture() const
 {
-    CSFML_CALL_RETURN(renderTexture, isSmooth(), DFalse);
+    return m_texture;
 }
+
+
+////////////////////////////////////////////////////////////
+bool RenderTexture::activate(bool active)
+{
+    return setActive(active);
+}
+
+} // namespace sf

@@ -1,7 +1,6 @@
-#DSFML Source Cmake List
 
 # include the SFML specific macros
-include(${CMAKE_SOURCE_DIR}/cmake/Macros.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
 # let CMake know about our additional libraries paths (on Windows and OS X)
 if (WINDOWS)
@@ -26,37 +25,14 @@ elseif(MACOSX)
     set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "${PROJECT_SOURCE_DIR}/extlibs/libs-osx/lib/")
 endif()
 
-# add the CSFML sources path
-include_directories(${CMAKE_SOURCE_DIR}/src)
+# add the SFML sources path
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # define the path of our additional CMake modules
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 
-# set the output directory for CSFML libraries
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
-
-# define the export symbol
-add_definitions(-DCSFML_EXPORTS)
-
-# disable stupid warnings with Visual C++
-if(COMPILER_MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif()
-
-# find SFML libraries (C++)
-if(WINDOWS)
-    set(SFML_STATIC_LIBRARIES TRUE)
-    add_definitions(-DSFML_STATIC)
-endif()
-
-find_package(SFML 2.0 COMPONENTS system window network graphics audio REQUIRED)
-#When completed, the line above should look like as follows
-#find_package(SFML 2.0 COMPONENTS system window network graphics audio REQUIRED)
-
-
-
-#find_package(SFML 2.0 COMPONENTS system window network graphics audio REQUIRED)
-include_directories(${SFML_INCLUDE_DIR})
+# set the output directory for SFML libraries
+set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 
 # add the modules subdirectories
 add_subdirectory(System)
@@ -64,4 +40,6 @@ add_subdirectory(Window)
 add_subdirectory(Network)
 add_subdirectory(Graphics)
 add_subdirectory(Audio)
-
+if(WINDOWS)
+    #add_subdirectory(Main)
+endif()

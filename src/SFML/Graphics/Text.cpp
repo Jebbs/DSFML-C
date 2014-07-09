@@ -1,301 +1,323 @@
-/*
-DSFML - The Simple and Fast Multimedia Library for D
+////////////////////////////////////////////////////////////
+//
+// SFML - Simple and Fast Multimedia Library
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
+//
+// This software is provided 'as-is', without any express or implied warranty.
+// In no event will the authors be held liable for any damages arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it freely,
+// subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented;
+//    you must not claim that you wrote the original software.
+//    If you use this software in a product, an acknowledgment
+//    in the product documentation would be appreciated but is not required.
+//
+// 2. Altered source versions must be plainly marked as such,
+//    and must not be misrepresented as being the original software.
+//
+// 3. This notice may not be removed or altered from any source distribution.
+//
+////////////////////////////////////////////////////////////
 
-Copyright (c) <2013> <Jeremy DeHaan>
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose, including commercial applications,
-and to alter it and redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
-If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution
-
-
-***All code is based on code written by Laurent Gomila***
-
-
-External Libraries Used:
-
-SFML - The Simple and Fast Multimedia Library
-Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
-
-All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license.php
-*/
-
+////////////////////////////////////////////////////////////
 // Headers
-#include <SFML/Graphics/Text.h>
-#include <SFML/Graphics/TextStruct.h>
-#include <SFML/Graphics/Font.h>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/ConvertTransform.hpp>
-#include <SFML/Internal.h>
+////////////////////////////////////////////////////////////
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <cassert>
 
 
-sfText* sfText_create(void)
+namespace sf
 {
-    sfText* text = new sfText;
-    text->Font = NULL;
+////////////////////////////////////////////////////////////
+Text::Text() :
+m_string       (),
+m_font         (NULL),
+m_characterSize(30),
+m_style        (Regular),
+m_color        (255, 255, 255),
+m_vertices     (Quads),
+m_bounds       ()
+{
 
-    return text;
 }
 
 
-sfText* sfText_copy(const sfText* text)
+////////////////////////////////////////////////////////////
+Text::Text(const String& string, const Font& font, unsigned int characterSize) :
+m_string       (string),
+m_font         (&font),
+m_characterSize(characterSize),
+m_style        (Regular),
+m_color        (255, 255, 255),
+m_vertices     (Quads),
+m_bounds       ()
 {
-    CSFML_CHECK_RETURN(text, NULL);
-
-    return new sfText(*text);
+    updateGeometry();
 }
 
 
-void sfText_destroy(sfText* text)
+////////////////////////////////////////////////////////////
+void Text::setString(const String& string)
 {
-    delete text;
+    m_string = string;
+    updateGeometry();
 }
 
 
-void sfText_setPosition(sfText* text, sfVector2f position)
+////////////////////////////////////////////////////////////
+void Text::setFont(const Font& font)
 {
-    CSFML_CALL(text, setPosition(position.x, position.y));
+    if (m_font != &font)
+    {
+        m_font = &font;
+        updateGeometry();
+    }
 }
 
 
-void sfText_setRotation(sfText* text, float angle)
+////////////////////////////////////////////////////////////
+void Text::setCharacterSize(unsigned int size)
 {
-    CSFML_CALL(text, setRotation(angle));
+    if (m_characterSize != size)
+    {
+        m_characterSize = size;
+        updateGeometry();
+    }
 }
 
 
-void sfText_setScale(sfText* text, sfVector2f scale)
+////////////////////////////////////////////////////////////
+void Text::setStyle(Uint32 style)
 {
-    CSFML_CALL(text, setScale(scale.x, scale.y));
+    if (m_style != style)
+    {
+        m_style = style;
+        updateGeometry();
+    }
 }
 
 
-void sfText_setOrigin(sfText* text, sfVector2f origin)
+////////////////////////////////////////////////////////////
+void Text::setColor(const Color& color)
 {
-    CSFML_CALL(text, setOrigin(origin.x, origin.y));
+    if (color != m_color)
+    {
+        m_color = color;
+        for (unsigned int i = 0; i < m_vertices.getVertexCount(); ++i)
+            m_vertices[i].color = m_color;
+    }
 }
 
 
-sfVector2f sfText_getPosition(const sfText* text)
+////////////////////////////////////////////////////////////
+const String& Text::getString() const
 {
-    sfVector2f position = {0, 0};
-    CSFML_CHECK_RETURN(text, position);
+    return m_string;
+}
 
-    sf::Vector2f sfmlPos = text->This.getPosition();
-    position.x = sfmlPos.x;
-    position.y = sfmlPos.y;
+
+////////////////////////////////////////////////////////////
+const Font* Text::getFont() const
+{
+    return m_font;
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int Text::getCharacterSize() const
+{
+    return m_characterSize;
+}
+
+
+////////////////////////////////////////////////////////////
+Uint32 Text::getStyle() const
+{
+    return m_style;
+}
+
+
+////////////////////////////////////////////////////////////
+const Color& Text::getColor() const
+{
+    return m_color;
+}
+
+
+////////////////////////////////////////////////////////////
+Vector2f Text::findCharacterPos(std::size_t index) const
+{
+    // Make sure that we have a valid font
+    if (!m_font)
+        return Vector2f();
+
+    // Adjust the index if it's out of range
+    if (index > m_string.getSize())
+        index = m_string.getSize();
+
+    // Precompute the variables needed by the algorithm
+    bool  bold   = (m_style & Bold) != 0;
+    float hspace = static_cast<float>(m_font->getGlyph(L' ', m_characterSize, bold).advance);
+    float vspace = static_cast<float>(m_font->getLineSpacing(m_characterSize));
+
+    // Compute the position
+    Vector2f position;
+    Uint32 prevChar = 0;
+    for (std::size_t i = 0; i < index; ++i)
+    {
+        Uint32 curChar = m_string[i];
+
+        // Apply the kerning offset
+        position.x += static_cast<float>(m_font->getKerning(prevChar, curChar, m_characterSize));
+        prevChar = curChar;
+
+        // Handle special characters
+        switch (curChar)
+        {
+            case L' ' :  position.x += hspace;                 continue;
+            case L'\t' : position.x += hspace * 4;             continue;
+            case L'\n' : position.y += vspace; position.x = 0; continue;
+            case L'\v' : position.y += vspace * 4;             continue;
+        }
+
+        // For regular characters, add the advance offset of the glyph
+        position.x += static_cast<float>(m_font->getGlyph(curChar, m_characterSize, bold).advance);
+    }
+
+    // Transform the position to global coordinates
+    position = getTransform().transformPoint(position);
 
     return position;
 }
 
 
-float sfText_getRotation(const sfText* text)
+////////////////////////////////////////////////////////////
+FloatRect Text::getLocalBounds() const
 {
-    CSFML_CALL_RETURN(text, getRotation(), 0.f);
+    return m_bounds;
 }
 
 
-sfVector2f sfText_getScale(const sfText* text)
+////////////////////////////////////////////////////////////
+FloatRect Text::getGlobalBounds() const
 {
-    sfVector2f scale = {0, 0};
-    CSFML_CHECK_RETURN(text, scale);
-
-    sf::Vector2f sfmlScale = text->This.getScale();
-    scale.x = sfmlScale.x;
-    scale.y = sfmlScale.y;
-
-    return scale;
+    return getTransform().transformRect(getLocalBounds());
 }
 
 
-sfVector2f sfText_getOrigin(const sfText* text)
+////////////////////////////////////////////////////////////
+void Text::draw(RenderTarget& target, RenderStates states) const
 {
-    sfVector2f origin = {0, 0};
-    CSFML_CHECK_RETURN(text, origin);
-
-    sf::Vector2f sfmlOrigin = text->This.getOrigin();
-    origin.x = sfmlOrigin.x;
-    origin.y = sfmlOrigin.y;
-
-    return origin;
+    if (m_font)
+    {
+        states.transform *= getTransform();
+        states.texture = &m_font->getTexture(m_characterSize);
+        target.draw(m_vertices, states);
+    }
 }
 
 
-void sfText_move(sfText* text, sfVector2f offset)
+////////////////////////////////////////////////////////////
+void Text::updateGeometry()
 {
-    CSFML_CALL(text, move(offset.x, offset.y));
+    // Clear the previous geometry
+    m_vertices.clear();
+    m_bounds = FloatRect();
+
+    // No font: nothing to draw
+    if (!m_font)
+        return;
+
+    // No text: nothing to draw
+    if (m_string.isEmpty())
+        return;
+
+    // Compute values related to the text style
+    bool  bold               = (m_style & Bold) != 0;
+    bool  underlined         = (m_style & Underlined) != 0;
+    float italic             = (m_style & Italic) ? 0.208f : 0.f; // 12 degrees
+    float underlineOffset    = m_characterSize * 0.1f;
+    float underlineThickness = m_characterSize * (bold ? 0.1f : 0.07f);
+
+    // Precompute the variables needed by the algorithm
+    float hspace = static_cast<float>(m_font->getGlyph(L' ', m_characterSize, bold).advance);
+    float vspace = static_cast<float>(m_font->getLineSpacing(m_characterSize));
+    float x      = 0.f;
+    float y      = static_cast<float>(m_characterSize);
+
+    // Create one quad for each character
+    Uint32 prevChar = 0;
+    for (std::size_t i = 0; i < m_string.getSize(); ++i)
+    {
+        Uint32 curChar = m_string[i];
+
+        // Apply the kerning offset
+        x += static_cast<float>(m_font->getKerning(prevChar, curChar, m_characterSize));
+        prevChar = curChar;
+
+        // If we're using the underlined style and there's a new line, draw a line
+        if (underlined && (curChar == L'\n'))
+        {
+            float top = y + underlineOffset;
+            float bottom = top + underlineThickness;
+
+            m_vertices.append(Vertex(Vector2f(0, top),    m_color, Vector2f(1, 1)));
+            m_vertices.append(Vertex(Vector2f(x, top),    m_color, Vector2f(1, 1)));
+            m_vertices.append(Vertex(Vector2f(x, bottom), m_color, Vector2f(1, 1)));
+            m_vertices.append(Vertex(Vector2f(0, bottom), m_color, Vector2f(1, 1)));
+        }
+
+        // Handle special characters
+        switch (curChar)
+        {
+            case L' ' :  x += hspace;        continue;
+            case L'\t' : x += hspace * 4;    continue;
+            case L'\n' : y += vspace; x = 0; continue;
+            case L'\v' : y += vspace * 4;    continue;
+        }
+
+        // Extract the current glyph's description
+        const Glyph& glyph = m_font->getGlyph(curChar, m_characterSize, bold);
+
+        int left   = glyph.bounds.left;
+        int top    = glyph.bounds.top;
+        int right  = glyph.bounds.left + glyph.bounds.width;
+        int bottom = glyph.bounds.top  + glyph.bounds.height;
+
+        float u1 = static_cast<float>(glyph.textureRect.left);
+        float v1 = static_cast<float>(glyph.textureRect.top);
+        float u2 = static_cast<float>(glyph.textureRect.left + glyph.textureRect.width);
+        float v2 = static_cast<float>(glyph.textureRect.top  + glyph.textureRect.height);
+
+        // Add a quad for the current character
+        m_vertices.append(Vertex(Vector2f(x + left  - italic * top,    y + top),    m_color, Vector2f(u1, v1)));
+        m_vertices.append(Vertex(Vector2f(x + right - italic * top,    y + top),    m_color, Vector2f(u2, v1)));
+        m_vertices.append(Vertex(Vector2f(x + right - italic * bottom, y + bottom), m_color, Vector2f(u2, v2)));
+        m_vertices.append(Vertex(Vector2f(x + left  - italic * bottom, y + bottom), m_color, Vector2f(u1, v2)));
+
+        // Advance to the next character
+        x += glyph.advance;
+    }
+
+    // If we're using the underlined style, add the last line
+    if (underlined)
+    {
+        float top = y + underlineOffset;
+        float bottom = top + underlineThickness;
+
+        m_vertices.append(Vertex(Vector2f(0, top),    m_color, Vector2f(1, 1)));
+        m_vertices.append(Vertex(Vector2f(x, top),    m_color, Vector2f(1, 1)));
+        m_vertices.append(Vertex(Vector2f(x, bottom), m_color, Vector2f(1, 1)));
+        m_vertices.append(Vertex(Vector2f(0, bottom), m_color, Vector2f(1, 1)));
+    }
+
+    // Recompute the bounding rectangle
+    m_bounds = m_vertices.getBounds();
 }
 
-
-void sfText_rotate(sfText* text, float angle)
-{
-    CSFML_CALL(text, rotate(angle));
-}
-
-
-void sfText_scale(sfText* text, sfVector2f factors)
-{
-    CSFML_CALL(text, scale(factors.x, factors.y));
-}
-
-
-sfTransform sfText_getTransform(const sfText* text)
-{
-    CSFML_CHECK_RETURN(text, sfTransform_Identity);
-
-    text->Transform = convertTransform(text->This.getTransform());
-    return text->Transform;
-}
-
-
-sfTransform sfText_getInverseTransform(const sfText* text)
-{
-    CSFML_CHECK_RETURN(text, sfTransform_Identity);
-
-    text->InverseTransform = convertTransform(text->This.getInverseTransform());
-    return text->InverseTransform;
-}
-
-
-void sfText_setString(sfText* text, const char* string)
-{
-    CSFML_CALL(text, setString(string));
-}
-
-
-void sfText_setUnicodeString(sfText* text, const sfUint32* string)
-{
-    sf::String UTF32Text = string;
-    CSFML_CALL(text, setString(UTF32Text));
-}
-
-
-void sfText_setFont(sfText* text, const sfFont* font)
-{
-    CSFML_CHECK(font);
-
-    CSFML_CALL(text, setFont(font->This));
-    text->Font = font;
-}
-
-
-void sfText_setCharacterSize(sfText* text, unsigned int size)
-{
-    CSFML_CALL(text, setCharacterSize(size));
-}
-
-
-void sfText_setStyle(sfText* text, sfUint32 style)
-{
-    CSFML_CALL(text, setStyle(style));
-}
-
-
-void sfText_setColor(sfText* text, sfColor color)
-{
-    CSFML_CALL(text, setColor(sf::Color(color.r, color.g, color.b, color.a)));
-}
-
-
-const char* sfText_getString(const sfText* text)
-{
-    CSFML_CHECK_RETURN(text, NULL);
-
-    text->String = text->This.getString().toAnsiString();
-
-    return text->String.c_str();
-}
-
-
-const sfUint32* sfText_getUnicodeString(const sfText* text)
-{
-    CSFML_CHECK_RETURN(text, NULL);
-
-    return text->This.getString().getData();
-}
-
-
-const sfFont* sfText_getFont(const sfText* text)
-{
-    CSFML_CHECK_RETURN(text, NULL);
-
-    return text->Font;
-}
-
-
-unsigned int sfText_getCharacterSize(const sfText* text)
-{
-    CSFML_CALL_RETURN(text, getCharacterSize(), 0);
-}
-
-
-sfUint32 sfText_getStyle(const sfText* text)
-{
-    CSFML_CALL_RETURN(text, getStyle(), 0);
-}
-
-
-sfColor sfText_getColor(const sfText* text)
-{
-    sfColor color = {0, 0, 0, 0};
-    CSFML_CHECK_RETURN(text, color);
-
-    sf::Color sfmlColor = text->This.getColor();
-    color.r = sfmlColor.r;
-    color.g = sfmlColor.g;
-    color.b = sfmlColor.b;
-    color.a = sfmlColor.a;
-
-    return color;
-}
-
-
-sfVector2f sfText_findCharacterPos(const sfText* text, size_t index)
-{
-    sfVector2f position = {0, 0};
-    CSFML_CHECK_RETURN(text, position);
-
-    sf::Vector2f sfmlPos = text->This.findCharacterPos(index);
-    position.x = sfmlPos.x;
-    position.y = sfmlPos.y;
-
-    return position;
-}
-
-
-sfFloatRect sfText_getLocalBounds(const sfText* text)
-{
-    sfFloatRect rect = {0, 0, 0, 0};
-    CSFML_CHECK_RETURN(text, rect);
-
-    sf::FloatRect sfmlRect = text->This.getLocalBounds();
-    rect.left = sfmlRect.left;
-    rect.top = sfmlRect.top;
-    rect.width = sfmlRect.width;
-    rect.height = sfmlRect.height;
-
-    return rect;
-}
-
-
-sfFloatRect sfText_getGlobalBounds(const sfText* text)
-{
-    sfFloatRect rect = {0, 0, 0, 0};
-    CSFML_CHECK_RETURN(text, rect);
-
-    sf::FloatRect sfmlRect = text->This.getGlobalBounds();
-    rect.left = sfmlRect.left;
-    rect.top = sfmlRect.top;
-    rect.width = sfmlRect.width;
-    rect.height = sfmlRect.height;
-
-    return rect;
-}
+} // namespace sf

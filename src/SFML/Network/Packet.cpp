@@ -1,212 +1,512 @@
-/*
-DSFML - The Simple and Fast Multimedia Library for D
+////////////////////////////////////////////////////////////
+//
+// SFML - Simple and Fast Multimedia Library
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
+//
+// This software is provided 'as-is', without any express or implied warranty.
+// In no event will the authors be held liable for any damages arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it freely,
+// subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented;
+//    you must not claim that you wrote the original software.
+//    If you use this software in a product, an acknowledgment
+//    in the product documentation would be appreciated but is not required.
+//
+// 2. Altered source versions must be plainly marked as such,
+//    and must not be misrepresented as being the original software.
+//
+// 3. This notice may not be removed or altered from any source distribution.
+//
+////////////////////////////////////////////////////////////
 
-Copyright (c) <2013> <Jeremy DeHaan>
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose, including commercial applications,
-and to alter it and redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
-If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution
-
-
-***All code is based on Laurent Gomila's SFML library.***
-
-
-External Libraries Used:
-
-SFML - The Simple and Fast Multimedia Library
-Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
-
-All Libraries used by SFML
-*/
-
-
+////////////////////////////////////////////////////////////
 // Headers
-#include <SFML/Network/Packet.h>
-#include <SFML/Network/PacketStruct.h>
-#include <SFML/Internal.h>
-
-
 ////////////////////////////////////////////////////////////
-sfPacket* sfPacket_create(void)
+#include <SFML/Network/Packet.hpp>
+#include <SFML/Network/SocketImpl.hpp>
+#include <SFML/System/String.hpp>
+#include <cstring>
+
+
+namespace sf
 {
-    return new sfPacket;
-}
-
-
-sfPacket* sfPacket_copy(const sfPacket* packet)
+////////////////////////////////////////////////////////////
+Packet::Packet() :
+m_readPos(0),
+m_isValid(true)
 {
-    CSFML_CHECK_RETURN(packet, NULL);
 
-    return new sfPacket(*packet);
-}
-
-
-void sfPacket_destroy(sfPacket* packet)
-{
-    delete packet;
-}
-
-
-
-void sfPacket_append(sfPacket* packet, const void* data, size_t sizeInBytes)
-{
-    CSFML_CALL(packet, append(data, sizeInBytes));
 }
 
 
 ////////////////////////////////////////////////////////////
-void sfPacket_clear(sfPacket* packet)
+Packet::~Packet()
 {
-    CSFML_CALL(packet, clear());
+
 }
 
 
 ////////////////////////////////////////////////////////////
-const void* sfPacket_getData(const sfPacket* packet)
+void Packet::append(const void* data, std::size_t sizeInBytes)
 {
-    CSFML_CALL_RETURN(packet, getData(), NULL);
+    if (data && (sizeInBytes > 0))
+    {
+        std::size_t start = m_data.size();
+        m_data.resize(start + sizeInBytes);
+        std::memcpy(&m_data[start], data, sizeInBytes);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-size_t sfPacket_getDataSize(const sfPacket* packet)
+void Packet::clear()
 {
-    CSFML_CALL_RETURN(packet, getDataSize(), 0);
+    m_data.clear();
+    m_readPos = 0;
+    m_isValid = true;
 }
 
 
 ////////////////////////////////////////////////////////////
-DBool sfPacket_endOfPacket(const sfPacket* packet)
+const void* Packet::getData() const
 {
-    CSFML_CALL_RETURN(packet, endOfPacket(), DFalse);
+    return !m_data.empty() ? &m_data[0] : NULL;
 }
 
 
 ////////////////////////////////////////////////////////////
-DBool sfPacket_canRead(const sfPacket* packet)
+std::size_t Packet::getDataSize() const
 {
-    CSFML_CHECK_RETURN(packet, DFalse);
-    return packet->This ? DTrue : DFalse;
+    return m_data.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-DBool sfPacket_readBool(sfPacket* packet)
+bool Packet::endOfPacket() const
 {
-    return sfPacket_readUint8(packet);
+    return m_readPos >= m_data.size();
 }
-DByte sfPacket_readInt8(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DByte value;
-    packet->This >> value;
-    return value;
-}
-DUbyte sfPacket_readUint8(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DUbyte value;
-    packet->This >> value;
-    return value;
-}
-DShort sfPacket_readInt16(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DShort value;
-    packet->This >> value;
-    return value;
-}
-DUshort sfPacket_readUint16(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DUshort value;
-    packet->This >> value;
-    return value;
-}
-DInt sfPacket_readInt32(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DInt value;
-    packet->This >> value;
-    return value;
-}
-DUint sfPacket_readUint32(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    DInt value;
-    packet->This >> value;
-    return value;
-}
-float sfPacket_readFloat(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    float value;
-    packet->This >> value;
-    return value;
-}
-double sfPacket_readDouble(sfPacket* packet)
-{
-    CSFML_CHECK_RETURN(packet, DFalse);
-    double value;
-    packet->This >> value;
-    return value;
-}
-
-
 
 
 ////////////////////////////////////////////////////////////
-void sfPacket_writeBool(sfPacket* packet, DBool value)
+Packet::operator BoolType() const
 {
-    sfPacket_writeUint8(packet, value ? 1 : 0);
-}
-void sfPacket_writeInt8(sfPacket* packet, DByte value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeUint8(sfPacket* packet, DUbyte value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeInt16(sfPacket* packet, DShort value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeUint16(sfPacket* packet, DUshort value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeInt32(sfPacket* packet, DInt value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeUint32(sfPacket* packet, DUint value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeFloat(sfPacket* packet, float value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
-}
-void sfPacket_writeDouble(sfPacket* packet, double value)
-{
-    CSFML_CHECK(packet);
-    packet->This << value;
+    return m_isValid ? &Packet::checkSize : NULL;
 }
 
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(bool& data)
+{
+    Uint8 value;
+    if (*this >> value)
+        data = (value != 0);
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Int8& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = *reinterpret_cast<const Int8*>(&m_data[m_readPos]);
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Uint8& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = *reinterpret_cast<const Uint8*>(&m_data[m_readPos]);
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Int16& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = ntohs(*reinterpret_cast<const Int16*>(&m_data[m_readPos]));
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Uint16& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = ntohs(*reinterpret_cast<const Uint16*>(&m_data[m_readPos]));
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Int32& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = ntohl(*reinterpret_cast<const Int32*>(&m_data[m_readPos]));
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(Uint32& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = ntohl(*reinterpret_cast<const Uint32*>(&m_data[m_readPos]));
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(float& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = *reinterpret_cast<const float*>(&m_data[m_readPos]);
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(double& data)
+{
+    if (checkSize(sizeof(data)))
+    {
+        data = *reinterpret_cast<const double*>(&m_data[m_readPos]);
+        m_readPos += sizeof(data);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(char* data)
+{
+    // First extract string length
+    Uint32 length = 0;
+    *this >> length;
+
+    if ((length > 0) && checkSize(length))
+    {
+        // Then extract characters
+        std::memcpy(data, &m_data[m_readPos], length);
+        data[length] = '\0';
+
+        // Update reading position
+        m_readPos += length;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(std::string& data)
+{
+    // First extract string length
+    Uint32 length = 0;
+    *this >> length;
+
+    data.clear();
+    if ((length > 0) && checkSize(length))
+    {
+        // Then extract characters
+        data.assign(&m_data[m_readPos], length);
+
+        // Update reading position
+        m_readPos += length;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(wchar_t* data)
+{
+    // First extract string length
+    Uint32 length = 0;
+    *this >> length;
+
+    if ((length > 0) && checkSize(length * sizeof(Uint32)))
+    {
+        // Then extract characters
+        for (Uint32 i = 0; i < length; ++i)
+        {
+            Uint32 character = 0;
+            *this >> character;
+            data[i] = static_cast<wchar_t>(character);
+        }
+        data[length] = L'\0';
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(std::wstring& data)
+{
+    // First extract string length
+    Uint32 length = 0;
+    *this >> length;
+
+    data.clear();
+    if ((length > 0) && checkSize(length * sizeof(Uint32)))
+    {
+        // Then extract characters
+        for (Uint32 i = 0; i < length; ++i)
+        {
+            Uint32 character = 0;
+            *this >> character;
+            data += static_cast<wchar_t>(character);
+        }
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator >>(String& data)
+{
+    // First extract the string length
+    Uint32 length = 0;
+    *this >> length;
+
+    data.clear();
+    if ((length > 0) && checkSize(length * sizeof(Uint32)))
+    {
+        // Then extract characters
+        for (Uint32 i = 0; i < length; ++i)
+        {
+            Uint32 character = 0;
+            *this >> character;
+            data += character;
+        }
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(bool data)
+{
+    *this << static_cast<Uint8>(data);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Int8 data)
+{
+    append(&data, sizeof(data));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Uint8 data)
+{
+    append(&data, sizeof(data));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Int16 data)
+{
+    Int16 toWrite = htons(data);
+    append(&toWrite, sizeof(toWrite));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Uint16 data)
+{
+    Uint16 toWrite = htons(data);
+    append(&toWrite, sizeof(toWrite));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Int32 data)
+{
+    Int32 toWrite = htonl(data);
+    append(&toWrite, sizeof(toWrite));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(Uint32 data)
+{
+    Uint32 toWrite = htonl(data);
+    append(&toWrite, sizeof(toWrite));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(float data)
+{
+    append(&data, sizeof(data));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(double data)
+{
+    append(&data, sizeof(data));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(const char* data)
+{
+    // First insert string length
+    Uint32 length = 0;
+    for (const char* c = data; *c != '\0'; ++c)
+        ++length;
+    *this << length;
+
+    // Then insert characters
+    append(data, length * sizeof(char));
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(const std::string& data)
+{
+    // First insert string length
+    Uint32 length = static_cast<Uint32>(data.size());
+    *this << length;
+
+    // Then insert characters
+    if (length > 0)
+    {
+        append(data.c_str(), length * sizeof(std::string::value_type));
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(const wchar_t* data)
+{
+    // First insert string length
+    Uint32 length = 0;
+    for (const wchar_t* c = data; *c != L'\0'; ++c)
+        ++length;
+    *this << length;
+
+    // Then insert characters
+    for (const wchar_t* c = data; *c != L'\0'; ++c)
+        *this << static_cast<Uint32>(*c);
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(const std::wstring& data)
+{
+    // First insert string length
+    Uint32 length = static_cast<Uint32>(data.size());
+    *this << length;
+
+    // Then insert characters
+    if (length > 0)
+    {
+        for (std::wstring::const_iterator c = data.begin(); c != data.end(); ++c)
+            *this << static_cast<Uint32>(*c);
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator <<(const String& data)
+{
+    // First insert the string length
+    Uint32 length = static_cast<Uint32>(data.getSize());
+    *this << length;
+
+    // Then insert characters
+    if (length > 0)
+    {
+        for (String::ConstIterator c = data.begin(); c != data.end(); ++c)
+            *this << *c;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Packet::checkSize(std::size_t size)
+{
+    m_isValid = m_isValid && (m_readPos + size <= m_data.size());
+
+    return m_isValid;
+}
+
+
+////////////////////////////////////////////////////////////
+const void* Packet::onSend(std::size_t& size)
+{
+    size = getDataSize();
+    return getData();
+}
+
+
+////////////////////////////////////////////////////////////
+void Packet::onReceive(const void* data, std::size_t size)
+{
+    append(data, size);
+}
+
+} // namespace sf

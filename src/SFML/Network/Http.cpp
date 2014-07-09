@@ -1,170 +1,376 @@
-/*
-DSFML - The Simple and Fast Multimedia Library for D
+////////////////////////////////////////////////////////////
+//
+// SFML - Simple and Fast Multimedia Library
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
+//
+// This software is provided 'as-is', without any express or implied warranty.
+// In no event will the authors be held liable for any damages arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it freely,
+// subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented;
+//    you must not claim that you wrote the original software.
+//    If you use this software in a product, an acknowledgment
+//    in the product documentation would be appreciated but is not required.
+//
+// 2. Altered source versions must be plainly marked as such,
+//    and must not be misrepresented as being the original software.
+//
+// 3. This notice may not be removed or altered from any source distribution.
+//
+////////////////////////////////////////////////////////////
 
-Copyright (c) <2013> <Jeremy DeHaan>
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose, including commercial applications,
-and to alter it and redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
-If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution
-
-
-***All code is based on Laurent Gomila's SFML library.***
-
-
-External Libraries Used:
-
-SFML - The Simple and Fast Multimedia Library
-Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
-
-All Libraries used by SFML
-*/
-
+////////////////////////////////////////////////////////////
 // Headers
-#include <SFML/Network/Http.h>
-#include <SFML/Network/HttpStruct.h>
-#include <SFML/Internal.h>
+////////////////////////////////////////////////////////////
+#include <SFML/Network/Http.hpp>
+#include <cctype>
+#include <algorithm>
+#include <iterator>
+#include <sstream>
 
 
-///HTTP Request Functions
-
-sfHttpRequest* sfHttpRequest_create(void)
+namespace
 {
-    return new sfHttpRequest;
+    // Convert a string to lower case
+    std::string toLower(std::string str)
+    {
+        for (std::string::iterator i = str.begin(); i != str.end(); ++i)
+            *i = static_cast<char>(std::tolower(*i));
+        return str;
+    }
 }
 
 
-
-void sfHttpRequest_destroy(sfHttpRequest* httpRequest)
+namespace sf
 {
-    delete httpRequest;
+////////////////////////////////////////////////////////////
+Http::Request::Request(const std::string& uri, Method method, const std::string& body)
+{
+    setMethod(method);
+    setUri(uri);
+    setHttpVersion(1, 0);
+    setBody(body);
 }
 
 
-
-void sfHttpRequest_setField(sfHttpRequest* httpRequest, const char* field, const char* value)
+////////////////////////////////////////////////////////////
+void Http::Request::setField(const std::string& field, const std::string& value)
 {
-    CSFML_CHECK(httpRequest);
-    if (field)
-        httpRequest->This.setField(field, value);
+    m_fields[toLower(field)] = value;
 }
 
 
-
-void sfHttpRequest_setMethod(sfHttpRequest* httpRequest, DInt method)
+////////////////////////////////////////////////////////////
+void Http::Request::setMethod(Http::Request::Method method)
 {
-    CSFML_CALL(httpRequest, setMethod(static_cast<sf::Http::Request::Method>(method)));
+    m_method = method;
 }
 
 
-
-void sfHttpRequest_setUri(sfHttpRequest* httpRequest, const char* uri)
+////////////////////////////////////////////////////////////
+void Http::Request::setUri(const std::string& uri)
 {
-    CSFML_CALL(httpRequest, setUri(uri ? uri : ""));
+    m_uri = uri;
+
+    // Make sure it starts with a '/'
+    if (m_uri.empty() || (m_uri[0] != '/'))
+        m_uri.insert(0, "/");
 }
 
 
-
-void sfHttpRequest_setHttpVersion(sfHttpRequest* httpRequest, DUint major, DUint minor)
+////////////////////////////////////////////////////////////
+void Http::Request::setHttpVersion(unsigned int major, unsigned int minor)
 {
-    CSFML_CALL(httpRequest, setHttpVersion(major, minor));
+    m_majorVersion = major;
+    m_minorVersion = minor;
 }
 
 
-
-void sfHttpRequest_setBody(sfHttpRequest* httpRequest, const char* body)
+////////////////////////////////////////////////////////////
+void Http::Request::setBody(const std::string& body)
 {
-    CSFML_CALL(httpRequest, setBody(body ? body : ""));
+    m_body = body;
 }
 
 
-///HTTP Response Functions
-
-void sfHttpResponse_destroy(sfHttpResponse* httpResponse)
+////////////////////////////////////////////////////////////
+std::string Http::Request::prepare() const
 {
-    delete httpResponse;
+    std::ostringstream out;
+
+    // Convert the method to its string representation
+    std::string method;
+    switch (m_method)
+    {
+        default :
+        case Get :  method = "GET";  break;
+        case Post : method = "POST"; break;
+        case Head : method = "HEAD"; break;
+    }
+
+    // Write the first line containing the request type
+    out << method << " " << m_uri << " ";
+    out << "HTTP/" << m_majorVersion << "." << m_minorVersion << "\r\n";
+
+    // Write fields
+    for (FieldTable::const_iterator i = m_fields.begin(); i != m_fields.end(); ++i)
+    {
+        out << i->first << ": " << i->second << "\r\n";
+    }
+
+    // Use an extra \r\n to separate the header from the body
+    out << "\r\n";
+
+    // Add the body
+    out << m_body;
+
+    return out.str();
 }
 
 
-const char* sfHttpResponse_getField(const sfHttpResponse* httpResponse, const char* field)
+////////////////////////////////////////////////////////////
+bool Http::Request::hasField(const std::string& field) const
 {
-    CSFML_CHECK_RETURN(httpResponse, NULL);
-    if (!field)
-        return NULL;
-
-    return httpResponse->This.getField(field).c_str();
+    return m_fields.find(toLower(field)) != m_fields.end();
 }
 
 
-DInt sfHttpResponse_getStatus(const sfHttpResponse* httpResponse)
+////////////////////////////////////////////////////////////
+Http::Response::Response() :
+m_status      (ConnectionFailed),
+m_majorVersion(0),
+m_minorVersion(0)
 {
-    CSFML_CHECK_RETURN(httpResponse, 1000);
 
-    return httpResponse->This.getStatus();
 }
 
 
-
-DUint sfHttpResponse_getMajorVersion(const sfHttpResponse* httpResponse)
+////////////////////////////////////////////////////////////
+const std::string& Http::Response::getField(const std::string& field) const
 {
-    CSFML_CALL_RETURN(httpResponse, getMajorHttpVersion(), 0);
+    FieldTable::const_iterator it = m_fields.find(toLower(field));
+    if (it != m_fields.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        static const std::string empty = "";
+        return empty;
+    }
 }
 
 
-
-DUint sfHttpResponse_getMinorVersion(const sfHttpResponse* httpResponse)
+////////////////////////////////////////////////////////////
+Http::Response::Status Http::Response::getStatus() const
 {
-    CSFML_CALL_RETURN(httpResponse, getMinorHttpVersion(), 0);
+    return m_status;
 }
 
 
-
-const char* sfHttpResponse_getBody(const sfHttpResponse* httpResponse)
+////////////////////////////////////////////////////////////
+unsigned int Http::Response::getMajorHttpVersion() const
 {
-    CSFML_CHECK_RETURN(httpResponse, NULL);
-
-    return httpResponse->This.getBody().c_str();
+    return m_majorVersion;
 }
 
 
-///HTTP Functions
-
-sfHttp* sfHttp_create(void)
+////////////////////////////////////////////////////////////
+unsigned int Http::Response::getMinorHttpVersion() const
 {
-    return new sfHttp;
+    return m_minorVersion;
 }
 
 
-
-void sfHttp_destroy(sfHttp* http)
+////////////////////////////////////////////////////////////
+const std::string& Http::Response::getBody() const
 {
-    delete http;
+    return m_body;
 }
 
 
-
-void sfHttp_setHost(sfHttp* http, const char* host, DUshort port)
+////////////////////////////////////////////////////////////
+void Http::Response::parse(const std::string& data)
 {
-    CSFML_CALL(http, setHost(host ? host : "", port));
+    std::istringstream in(data);
+
+    // Extract the HTTP version from the first line
+    std::string version;
+    if (in >> version)
+    {
+        if ((version.size() >= 8) && (version[6] == '.') &&
+            (toLower(version.substr(0, 5)) == "http/")   &&
+             isdigit(version[5]) && isdigit(version[7]))
+        {
+            m_majorVersion = version[5] - '0';
+            m_minorVersion = version[7] - '0';
+        }
+        else
+        {
+            // Invalid HTTP version
+            m_status = InvalidResponse;
+            return;
+        }
+    }
+
+    // Extract the status code from the first line
+    int status;
+    if (in >> status)
+    {
+        m_status = static_cast<Status>(status);
+    }
+    else
+    {
+        // Invalid status code
+        m_status = InvalidResponse;
+        return;
+    }
+
+    // Ignore the end of the first line
+    in.ignore(10000, '\n');
+
+    // Parse the other lines, which contain fields, one by one
+    std::string line;
+    while (std::getline(in, line) && (line.size() > 2))
+    {
+        std::string::size_type pos = line.find(": ");
+        if (pos != std::string::npos)
+        {
+            // Extract the field name and its value
+            std::string field = line.substr(0, pos);
+            std::string value = line.substr(pos + 2);
+
+            // Remove any trailing \r
+            if (!value.empty() && (*value.rbegin() == '\r'))
+                value.erase(value.size() - 1);
+
+            // Add the field
+            m_fields[toLower(field)] = value;
+        }
+    }
+
+    // Finally extract the body
+    m_body.clear();
+    std::copy(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>(), std::back_inserter(m_body));
 }
 
 
-
-sfHttpResponse* sfHttp_sendRequest(sfHttp* http, const sfHttpRequest* request, DLong timeout)
+////////////////////////////////////////////////////////////
+Http::Http() :
+m_host(),
+m_port(0)
 {
-    CSFML_CHECK_RETURN(http,    NULL);
-    CSFML_CHECK_RETURN(request, NULL);
 
-    sfHttpResponse* response = new sfHttpResponse;
-    response->This = http->This.sendRequest(request->This, sf::microseconds(timeout));
-
-    return response;
 }
+
+
+////////////////////////////////////////////////////////////
+Http::Http(const std::string& host, unsigned short port)
+{
+    setHost(host, port);
+}
+
+
+////////////////////////////////////////////////////////////
+void Http::setHost(const std::string& host, unsigned short port)
+{
+    // Detect the protocol used
+    std::string protocol = toLower(host.substr(0, 8));
+    if (protocol.substr(0, 7) == "http://")
+    {
+        // HTTP protocol
+        m_hostName = host.substr(7);
+        m_port     = (port != 0 ? port : 80);
+    }
+    else if (protocol == "https://")
+    {
+        // HTTPS protocol
+        m_hostName = host.substr(8);
+        m_port     = (port != 0 ? port : 443);
+    }
+    else
+    {
+        // Undefined protocol - use HTTP
+        m_hostName = host;
+        m_port     = (port != 0 ? port : 80);
+    }
+
+    // Remove any trailing '/' from the host name
+    if (!m_hostName.empty() && (*m_hostName.rbegin() == '/'))
+        m_hostName.erase(m_hostName.size() - 1);
+
+    m_host = IpAddress(m_hostName);
+}
+
+
+////////////////////////////////////////////////////////////
+Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
+{
+    // First make sure that the request is valid -- add missing mandatory fields
+    Request toSend(request);
+    if (!toSend.hasField("From"))
+    {
+        toSend.setField("From", "user@sfml-dev.org");
+    }
+    if (!toSend.hasField("User-Agent"))
+    {
+        toSend.setField("User-Agent", "libsfml-network/2.x");
+    }
+    if (!toSend.hasField("Host"))
+    {
+        toSend.setField("Host", m_hostName);
+    }
+    if (!toSend.hasField("Content-Length"))
+    {
+        std::ostringstream out;
+        out << toSend.m_body.size();
+        toSend.setField("Content-Length", out.str());
+    }
+    if ((toSend.m_method == Request::Post) && !toSend.hasField("Content-Type"))
+    {
+        toSend.setField("Content-Type", "application/x-www-form-urlencoded");
+    }
+    if ((toSend.m_majorVersion * 10 + toSend.m_minorVersion >= 11) && !toSend.hasField("Connection"))
+    {
+        toSend.setField("Connection", "close");
+    }
+
+    // Prepare the response
+    Response received;
+
+    // Connect the socket to the host
+    if (m_connection.connect(m_host, m_port, timeout) == Socket::Done)
+    {
+        // Convert the request to string and send it through the connected socket
+        std::string requestStr = toSend.prepare();
+
+        if (!requestStr.empty())
+        {
+            // Send it through the socket
+            if (m_connection.send(requestStr.c_str(), requestStr.size()) == Socket::Done)
+            {
+                // Wait for the server's response
+                std::string receivedStr;
+                std::size_t size = 0;
+                char buffer[1024];
+                while (m_connection.receive(buffer, sizeof(buffer), size) == Socket::Done)
+                {
+                    receivedStr.append(buffer, buffer + size);
+                }
+
+                // Build the Response object from the received data
+                received.parse(receivedStr);
+            }
+        }
+
+        // Close the connection
+        m_connection.disconnect();
+    }
+
+    return received;
+}
+
+} // namespace sf

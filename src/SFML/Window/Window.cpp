@@ -1,286 +1,393 @@
-/*
-DSFML - The Simple and Fast Multimedia Library for D
+////////////////////////////////////////////////////////////
+//
+// SFML - Simple and Fast Multimedia Library
+// Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
+//
+// This software is provided 'as-is', without any express or implied warranty.
+// In no event will the authors be held liable for any damages arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it freely,
+// subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented;
+//    you must not claim that you wrote the original software.
+//    If you use this software in a product, an acknowledgment
+//    in the product documentation would be appreciated but is not required.
+//
+// 2. Altered source versions must be plainly marked as such,
+//    and must not be misrepresented as being the original software.
+//
+// 3. This notice may not be removed or altered from any source distribution.
+//
+////////////////////////////////////////////////////////////
 
-Copyright (c) <2013> <Jeremy DeHaan>
-
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose, including commercial applications,
-and to alter it and redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
-If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution
-
-
-***All code is based on code written by Laurent Gomila***
-
-
-External Libraries Used:
-
-SFML - The Simple and Fast Multimedia Library
-Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
-
-All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license.php
-*/
-
+////////////////////////////////////////////////////////////
 // Headers
-#include <SFML/Window/Window.h>
-#include <SFML/Window/WindowStruct.h>
-#include <SFML/Internal.h>
-#include <SFML/ConvertEvent.h>
+////////////////////////////////////////////////////////////
+#include <SFML/Window/Window.hpp>
+#include <SFML/Window/GlContext.hpp>
+#include <SFML/Window/WindowImpl.hpp>
+#include <SFML/System/Sleep.hpp>
+#include <SFML/System/Err.hpp>
 
 
-sfWindow* sfWindow_create(DUint width, DUint height, DUint bitsPerPixel, const char* title, DInt style, DUint depthBits, DUint stencilBits, DUint antialiasingLevel, DUint majorVersion, DUint minorVersion)
+namespace
 {
-    // Convert video mode
-    sf::VideoMode videoMode(width, height, bitsPerPixel);
-
-    // Convert context settings
-    sf::ContextSettings params;
-
-        params.depthBits         = depthBits;
-        params.stencilBits       = stencilBits;
-        params.antialiasingLevel = antialiasingLevel;
-        params.majorVersion      = majorVersion;
-        params.minorVersion      = minorVersion;
-
-
-    // Create the window
-    sfWindow* window = new sfWindow;
-    window->This.create(videoMode, title, style, params);
-
-    return window;
+    const sf::Window* fullscreenWindow = NULL;
 }
 
 
-sfWindow* sfWindow_createUnicode(DUint width, DUint height, DUint bitsPerPixel, const DUint* title, DInt style, DUint depthBits, DUint stencilBits, DUint antialiasingLevel, DUint majorVersion, DUint minorVersion)
+namespace sf
 {
-    // Convert video mode
-    sf::VideoMode videoMode(width, height, bitsPerPixel);
-
-    // Convert context settings
-    sf::ContextSettings params;
-
-        params.depthBits         = depthBits;
-        params.stencilBits       = stencilBits;
-        params.antialiasingLevel = antialiasingLevel;
-        params.majorVersion      = majorVersion;
-        params.minorVersion      = minorVersion;
-
-
-    // Create the window
-    sfWindow* window = new sfWindow;
-    window->This.create(videoMode, title, style, params);
-
-    return window;
-}
-
-
-sfWindow* sfWindow_createFromHandle(sfWindowHandle handle, DUint depthBits, DUint stencilBits, DUint antialiasingLevel, DUint majorVersion, DUint minorVersion)
+////////////////////////////////////////////////////////////
+Window::Window() :
+m_impl          (NULL),
+m_context       (NULL),
+m_frameTimeLimit(Time::Zero)
 {
-    // Convert context settings
-    sf::ContextSettings params;
-    params.depthBits         = depthBits;
-    params.stencilBits       = stencilBits;
-    params.antialiasingLevel = antialiasingLevel;
-    params.majorVersion      = majorVersion;
-    params.minorVersion      = minorVersion;
-
-    // Create the window
-    sfWindow* window = new sfWindow;
-    window->This.create(handle, params);
-
-    return window;
-}
-
-
-
-void sfWindow_destroy(void* window)
-{
-    delete static_cast<sfWindow*>(window);
-}
-
-
-void sfWindow_close(void* window)
-{
-    CSFML_CALL(static_cast<sfWindow*>(window), close());
-}
-
-
-DBool sfWindow_isOpen(const void* window)
-{
-    CSFML_CALL_RETURN(static_cast<const sfWindow*>(window), isOpen(), DFalse);
-}
-
-
-void sfWindow_getSettings(const sfWindow* window, DUint* depthBits, DUint* stencilBits, DUint* antialiasingLevel, DUint* majorVersion, DUint* minorVersion)
-{
-
-    //CSFML_CHECK_RETURN(window, settings);
-
-    const sf::ContextSettings& params = window->This.getSettings();
-    *depthBits         = params.depthBits;
-    *stencilBits       = params.stencilBits;
-    *antialiasingLevel = params.antialiasingLevel;
-    *majorVersion      = params.majorVersion;
-    *minorVersion      = params.minorVersion;
 
 }
 
 
-
-DBool sfWindow_pollEvent(sfWindow* window, DEvent* event)
+////////////////////////////////////////////////////////////
+Window::Window(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings) :
+m_impl          (NULL),
+m_context       (NULL),
+m_frameTimeLimit(Time::Zero)
 {
-    CSFML_CHECK_RETURN(window, DFalse);
-    CSFML_CHECK_RETURN(event, DFalse);
-
-    // Get the event
-    sf::Event SFMLEvent;
-    bool ret = window->This.pollEvent(SFMLEvent);
-
-    // No event, return
-    if (!ret)
-        return DFalse;
-
-    // Convert the sf::Event event to a DSFML Event
-    convertEvent(SFMLEvent, event);
-
-    return DTrue;
+    create(mode, title, style, settings);
 }
 
 
-DBool sfWindow_waitEvent(sfWindow* window, DEvent* event)
+////////////////////////////////////////////////////////////
+Window::Window(WindowHandle handle, const ContextSettings& settings) :
+m_impl          (NULL),
+m_context       (NULL),
+m_frameTimeLimit(Time::Zero)
 {
-    CSFML_CHECK_RETURN(window, DFalse);
-    CSFML_CHECK_RETURN(event, DFalse);
-
-    // Get the event
-    sf::Event SFMLEvent;
-    bool ret = window->This.waitEvent(SFMLEvent);
-
-    // Error, return
-    if (!ret)
-        return DFalse;
-
-    // Convert the sf::Event event to a sfEvent
-    convertEvent(SFMLEvent, event);
-
-    return DTrue;
+    create(handle, settings);
 }
 
 
-void sfWindow_getPosition(const sfWindow* window, DInt* x, DInt* y)
+////////////////////////////////////////////////////////////
+Window::~Window()
 {
-    //sfVector2i position = {0, 0};
-    //CSFML_CHECK_RETURN(window, position);
-
-    sf::Vector2i sfmlPos = window->This.getPosition();
-    *x = sfmlPos.x;
-    *y = sfmlPos.y;
-
-
+    close();
 }
 
 
-void sfWindow_setPosition(sfWindow* window, DInt x, DInt y)
+////////////////////////////////////////////////////////////
+void Window::create(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings)
 {
-    CSFML_CALL(window, setPosition(sf::Vector2i(x, y)));
+    // Destroy the previous window implementation
+    close();
+
+    // Fullscreen style requires some tests
+    if (style & Style::Fullscreen)
+    {
+        // Make sure there's not already a fullscreen window (only one is allowed)
+        if (fullscreenWindow)
+        {
+            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode" << std::endl;
+            style &= ~Style::Fullscreen;
+        }
+        else
+        {
+            // Make sure that the chosen video mode is compatible
+            if (!mode.isValid())
+            {
+                err() << "The requested video mode is not available, switching to a valid mode" << std::endl;
+                mode = VideoMode::getFullscreenModes()[0];
+            }
+
+            // Update the fullscreen window
+            fullscreenWindow = this;
+        }
+    }
+
+    // Check validity of style
+    if ((style & Style::Close) || (style & Style::Resize))
+        style |= Style::Titlebar;
+
+    // Recreate the window implementation
+    m_impl = priv::WindowImpl::create(mode, title, style);
+
+    // Recreate the context
+    m_context = priv::GlContext::create(settings, m_impl, mode.bitsPerPixel);
+
+    // Perform common initializations
+    initialize();
 }
 
 
-void sfWindow_getSize(const sfWindow* window, DUint* width, DUint* height)
+////////////////////////////////////////////////////////////
+void Window::create(WindowHandle handle, const ContextSettings& settings)
 {
-    //sfVector2u size = {0, 0};
-    //CSFML_CHECK_RETURN(window, size);
+    // Destroy the previous window implementation
+    close();
 
-    sf::Vector2u sfmlSize = window->This.getSize();
-    *width = sfmlSize.x;
-    *height = sfmlSize.y;
+    // Recreate the window implementation
+    m_impl = priv::WindowImpl::create(handle);
 
+    // Recreate the context
+    m_context = priv::GlContext::create(settings, m_impl, VideoMode::getDesktopMode().bitsPerPixel);
 
+    // Perform common initializations
+    initialize();
 }
 
 
-void sfWindow_setSize(sfWindow* window, DUint width, DUint height)
+////////////////////////////////////////////////////////////
+void Window::close()
 {
-    CSFML_CALL(window, setSize(sf::Vector2u(width, height)));
+    if (m_context)
+    {
+        // Delete the context
+        delete m_context;
+        m_context = NULL;
+    }
+
+    if (m_impl)
+    {
+        // Delete the window implementation
+        delete m_impl;
+        m_impl = NULL;
+    }
+
+    // Update the fullscreen window
+    if (this == fullscreenWindow)
+        fullscreenWindow = NULL;
 }
 
 
-void sfWindow_setTitle(sfWindow* window, const char* title)
+////////////////////////////////////////////////////////////
+bool Window::isOpen() const
 {
-    CSFML_CALL(window, setTitle(title));
+    return m_impl != NULL;
 }
 
 
-void sfWindow_setUnicodeTitle(sfWindow* window, const DUint* title)
+////////////////////////////////////////////////////////////
+const ContextSettings& Window::getSettings() const
 {
-    CSFML_CALL(window, setTitle(title));
+    static const ContextSettings empty(0, 0, 0);
+
+    return m_context ? m_context->getSettings() : empty;
 }
 
 
-void sfWindow_setIcon(sfWindow* window, DUint width, DUint height, const DUbyte* pixels)
+////////////////////////////////////////////////////////////
+bool Window::pollEvent(Event& event)
 {
-    CSFML_CALL(window, setIcon(width, height, pixels));
+    if (m_impl && m_impl->popEvent(event, false))
+    {
+        return filterEvent(event);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
-void sfWindow_setVisible(sfWindow* window, DBool visible)
+////////////////////////////////////////////////////////////
+bool Window::waitEvent(Event& event)
 {
-    CSFML_CALL(window, setVisible(visible == DTrue));
+    if (m_impl && m_impl->popEvent(event, true))
+    {
+        return filterEvent(event);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
-void sfWindow_setMouseCursorVisible(sfWindow* window, DBool visible)
+////////////////////////////////////////////////////////////
+Vector2i Window::getPosition() const
 {
-    CSFML_CALL(window, setMouseCursorVisible(visible == DTrue));
+    return m_impl ? m_impl->getPosition() : Vector2i();
 }
 
 
-void sfWindow_setVerticalSyncEnabled(sfWindow* window, DBool enabled)
+////////////////////////////////////////////////////////////
+void Window::setPosition(const Vector2i& position)
 {
-    CSFML_CALL(window, setVerticalSyncEnabled(enabled == DTrue));
+    if (m_impl)
+        m_impl->setPosition(position);
 }
 
 
-void sfWindow_setKeyRepeatEnabled(sfWindow* window, DBool enabled)
+////////////////////////////////////////////////////////////
+Vector2u Window::getSize() const
 {
-    CSFML_CALL(window, setKeyRepeatEnabled(enabled == DTrue));
+    return m_impl ? m_impl->getSize() : Vector2u();
 }
 
 
-DBool sfWindow_setActive(sfWindow* window, DBool active)
+////////////////////////////////////////////////////////////
+void Window::setSize(const Vector2u size)
 {
-    CSFML_CALL_RETURN(window, setActive(active == DTrue), DFalse);
+    if (m_impl)
+        m_impl->setSize(size);
 }
 
 
-void sfWindow_display(sfWindow* window)
+////////////////////////////////////////////////////////////
+void Window::setTitle(const String& title)
 {
-    CSFML_CALL(window, display());
+    if (m_impl)
+        m_impl->setTitle(title);
 }
 
 
-void sfWindow_setFramerateLimit(sfWindow* window, DUint limit)
+////////////////////////////////////////////////////////////
+void Window::setIcon(unsigned int width, unsigned int height, const Uint8* pixels)
 {
-    CSFML_CALL(window, setFramerateLimit(limit));
+    if (m_impl)
+        m_impl->setIcon(width, height, pixels);
 }
 
 
-void sfWindow_setJoystickThreshold(sfWindow* window, float threshold)
+////////////////////////////////////////////////////////////
+void Window::setVisible(bool visible)
 {
-    CSFML_CALL(window, setJoystickThreshold(threshold));
+    if (m_impl)
+        m_impl->setVisible(visible);
 }
 
 
-sfWindowHandle sfWindow_getSystemHandle(const sfWindow* window)
+////////////////////////////////////////////////////////////
+void Window::setVerticalSyncEnabled(bool enabled)
 {
-    CSFML_CHECK_RETURN(window, NULL);
-
-    return (sfWindowHandle)window->This.getSystemHandle();
+    if (setActive())
+        m_context->setVerticalSyncEnabled(enabled);
 }
+
+
+////////////////////////////////////////////////////////////
+void Window::setMouseCursorVisible(bool visible)
+{
+    if (m_impl)
+        m_impl->setMouseCursorVisible(visible);
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::setKeyRepeatEnabled(bool enabled)
+{
+    if (m_impl)
+        m_impl->setKeyRepeatEnabled(enabled);
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::setFramerateLimit(unsigned int limit)
+{
+    if (limit > 0)
+        m_frameTimeLimit = seconds(1.f / limit);
+    else
+        m_frameTimeLimit = Time::Zero;
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::setJoystickThreshold(float threshold)
+{
+    if (m_impl)
+        m_impl->setJoystickThreshold(threshold);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Window::setActive(bool active) const
+{
+    if (m_context)
+    {
+        if (m_context->setActive(active))
+        {
+            return true;
+        }
+        else
+        {
+            err() << "Failed to activate the window's context" << std::endl;
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::display()
+{
+    // Display the backbuffer on screen
+    if (setActive())
+        m_context->display();
+
+    // Limit the framerate if needed
+    if (m_frameTimeLimit != Time::Zero)
+    {
+        sleep(m_frameTimeLimit - m_clock.getElapsedTime());
+        m_clock.restart();
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+WindowHandle Window::getSystemHandle() const
+{
+    return m_impl ? m_impl->getSystemHandle() : 0;
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::onCreate()
+{
+    // Nothing by default
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::onResize()
+{
+    // Nothing by default
+}
+
+
+////////////////////////////////////////////////////////////
+bool Window::filterEvent(const Event& event)
+{
+    // Notify resize events to the derived class
+    if (event.type == Event::Resized)
+        onResize();
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Window::initialize()
+{
+    // Setup default behaviours (to get a consistent behaviour across different implementations)
+    setVisible(true);
+    setMouseCursorVisible(true);
+    setVerticalSyncEnabled(false);
+    setKeyRepeatEnabled(true);
+
+    // Reset frame time
+    m_clock.restart();
+
+    // Activate the window
+    setActive();
+
+    // Notify the derived class
+    onCreate();
+}
+
+} // namespace sf
