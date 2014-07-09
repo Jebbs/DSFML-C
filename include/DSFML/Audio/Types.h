@@ -32,8 +32,11 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 #define DSFML_AUDIO_TYPES_H
 
 typedef struct sfSoundBuffer sfSoundBuffer;
+typedef struct sfSound sfSound;
+typedef struct sfSoundBuffer sfSoundBuffer;
 typedef struct sfSoundFile sfSoundFile;
 typedef struct sfSoundRecorder sfSoundRecorder;
+typedef struct sfSoundBufferRecorder sfSoundBufferRecorder;
 
 
 #endif // DSFML_AUDIO_TYPES_H

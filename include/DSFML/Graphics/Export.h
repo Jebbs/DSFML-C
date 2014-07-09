@@ -40,8 +40,14 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 ////////////////////////////////////////////////////////////
 // Define portable import / export macros
 ////////////////////////////////////////////////////////////
+//If we define DSFML_NETWORK_EXPORTS
+#if defined(DSFML_GRAPHICS_EXPORTS)
+	//We need to make sure the SFML_NETWORK_EXPORTS is defined as well
+	//#define SFML_GRAPHICS_EXPORTS 
+#endif
 
-#define DSFML_GRAPHICS_API DSFML_API_EXPORT
+//Then we define out D export. Will work for shared and static builds (since for static SFML_API_EXPORT is just empty)
+#define DSFML_GRAPHICS_API extern "C" SFML_API_EXPORT
 
 
 

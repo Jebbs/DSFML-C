@@ -30,40 +30,139 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <DSFML/Audio/Sound.h>
-#include <SFML/Audio/ALCheck.hpp>
+#include <DSFML/Audio/SoundStruct.h>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Vector3.hpp>
+#include <DSFML/Config.h>
 
-void sfSound_assignBuffer(DUint sourceID, DUint bufferID)
+sfSound* sfSound_create(void)
 {
-    alCheck(alSourcei(sourceID, AL_BUFFER, bufferID));
+    return new sfSound;
 }
 
-void sfSound_detachBuffer(DUint sourceID)
+sfSound* sfSound_copy(const sfSound* sound)
 {
-    alCheck(alSourcei(sourceID, AL_BUFFER, 0));
+    return new sfSound(*sound);
 }
 
-void sfSound_setLoop(DUint sourceID,DBool loop)
+void sfSound_destroy(sfSound* sound)
 {
-    alCheck(alSourcei(sourceID, AL_LOOPING, loop));
+    delete sound;
 }
 
-DBool sfSound_getLoop(DUint sourceID)
+void sfSound_play(sfSound* sound)
 {
-    ALint loop;
-    alCheck(alGetSourcei(sourceID, AL_LOOPING, &loop));
-
-    return loop;
+    sound->This.play();
 }
 
-void sfSound_setPlayingOffset(DUint sourceID, float offset)
+void sfSound_pause(sfSound* sound)
 {
-    alCheck(alSourcef(sourceID, AL_SEC_OFFSET, offset));
+    sound->This.pause();
 }
 
-float sfSound_getPlayingOffset(DUint sourceID)
+void sfSound_stop(sfSound* sound)
 {
-    ALfloat secs = 0.f;
-    alCheck(alGetSourcef(sourceID, AL_SEC_OFFSET, &secs));
+    sound->This.stop();
+}
 
-    return secs;
+void sfSound_setBuffer(sfSound* sound, const sfSoundBuffer* buffer)
+{
+    sound->This.setBuffer(buffer->This);
+    sound->Buffer = buffer;
+}
+
+//sfSoundBuffer* sfSound_getBuffer(const sfSound* sound)
+//{
+//    return const_cast<sfSoundBuffer*>(sound->Buffer);
+//}
+
+void sfSound_setLoop(sfSound* sound, DBool loop)
+{
+    (loop == DTrue)?sound->This.setLoop(true):sound->This.setLoop(false);
+}
+
+DBool sfSound_getLoop(const sfSound* sound)
+{
+    return (sound->This.getLoop())?DTrue:DFalse;
+}
+
+int sfSound_getStatus(const sfSound* sound)
+{
+    return static_cast<int>(sound->This.getStatus());
+}
+
+void sfSound_setPitch(sfSound* sound, float pitch)
+{
+    sound->This.setPitch(pitch);
+}
+
+void sfSound_setVolume(sfSound* sound, float volume)
+{
+    sound->This.setVolume(volume);
+}
+
+void sfSound_setPosition(sfSound* sound, float positionX, float positionY, float positionZ)
+{
+    sound->This.setPosition(sf::Vector3f(positionX, positionY, positionZ));
+}
+
+void sfSound_setRelativeToListener(sfSound* sound, DBool relative)
+{
+    (relative == DTrue)?sound->This.setRelativeToListener(true):sound->This.setRelativeToListener(false);
+}
+
+void sfSound_setMinDistance(sfSound* sound, float distance)
+{
+    sound->This.setMinDistance(distance);
+}
+
+void sfSound_setAttenuation(sfSound* sound, float attenuation)
+{
+    sound->This.setAttenuation(attenuation);
+}
+
+void sfSound_setPlayingOffset(sfSound* sound, DLong timeOffset)
+{
+    sound->This.setPlayingOffset(sf::microseconds(timeOffset));
+}
+
+float sfSound_getPitch(const sfSound* sound)
+{
+    return sound->This.getPitch();
+}
+
+float sfSound_getVolume(const sfSound* sound)
+{
+    return sound->This.getVolume();
+}
+
+void sfSound_getPosition(const sfSound* sound, float* positionX, float* positionY, float* positionZ)
+{
+    sf::Vector3f position = sound->This.getPosition();
+
+    *positionX = position.x;
+    *positionY = position.y;
+    *positionZ = position.z;
+}
+
+DBool sfSound_isRelativeToListener(const sfSound* sound)
+{
+    return (sound->This.isRelativeToListener())?DTrue:DFalse;
+}
+
+float sfSound_getMinDistance(const sfSound* sound)
+{
+    return sound->This.getMinDistance();
+}
+
+float sfSound_getAttenuation(const sfSound* sound)
+{
+    sound->This.getAttenuation();
+}
+
+DLong sfSound_getPlayingOffset(const sfSound* sound)
+{
+    sf::Time offset = sound->This.getPlayingOffset();
+
+    return offset.asMicroseconds();
 }

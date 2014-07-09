@@ -32,8 +32,6 @@ set(SRC
     ${INCROOT}/SoundStream.hpp
 
      ${DINCROOT}/Export.h
-     ${DINCROOT}/Err.h
-     ${DSRCROOT}/Err.cpp
      ${DSRCROOT}/Listener.cpp
      ${DINCROOT}/Listener.h
      ${DSRCROOT}/Sound.cpp
@@ -42,13 +40,11 @@ set(SRC
      ${DINCROOT}/SoundBuffer.h
      ${DSRCROOT}/SoundFile.cpp
      ${DINCROOT}/SoundFile.h
-     ${DSRCROOT}/InternalSoundRecorder.cpp
-     ${DINCROOT}/InternalSoundRecorder.hpp
      ${DSRCROOT}/SoundFileStruct.h
      ${DSRCROOT}/SoundRecorder.cpp
      ${DINCROOT}/SoundRecorder.h
-     ${DSRCROOT}/SoundSource.cpp
-     ${DINCROOT}/SoundSource.h
+     ${DSRCROOT}/SoundRecorderStruct.h
+     ${DSRCROOT}/SoundStreamStruct.h
      ${DSRCROOT}/SoundStream.cpp
      ${DINCROOT}/SoundStream.h
 )
@@ -70,8 +66,12 @@ find_package(Sndfile REQUIRED)
 # add include paths of external libraries
 include_directories(${OPENAL_INCLUDE_DIR} ${SNDFILE_INCLUDE_DIR})
 
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DSFML_AUDIO_EXPORTS)
+endif()
+
 # define the sfml-audio target
-sfml_add_library(sfml-audio
+sfml_add_library(dsfml-audio
                  SOURCES ${SRC}
                  DEPENDS dsfml-system
                  EXTERNAL_LIBS ${OPENAL_LIBRARY} ${SNDFILE_LIBRARY})

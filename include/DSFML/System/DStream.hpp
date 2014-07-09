@@ -52,6 +52,10 @@ public:
 //Define a class based off sf::InputStream that encoumpasses a DStream
 class sfmlStream:public sf::InputStream
 {
+
+private:
+    DStream* myStream;
+    
 public:
 
     sfmlStream()
@@ -82,9 +86,6 @@ public:
     {
         return myStream->getSize();
     }
-
-    private:
-    DStream* myStream;
 
 };
 

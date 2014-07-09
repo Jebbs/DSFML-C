@@ -87,7 +87,12 @@ if(LINUX)
     set(SYSTEM_EXT_LIBS ${SYSTEM_EXT_LIBS} rt)
 endif()
 
+
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DSFML_SYSTEM_EXPORTS)
+endif()
+
 # define the sfml-system target
-sfml_add_library(sfml-system
+sfml_add_library(dsfml-system
                  SOURCES ${SRC} ${PLATFORM_SRC}
                  EXTERNAL_LIBS ${SYSTEM_EXT_LIBS})

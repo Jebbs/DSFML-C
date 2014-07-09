@@ -33,26 +33,20 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <DSFML/Audio/Export.h>
-#include <DSFML/Audio/Types.h>
+#include <DSFML/Audio/SoundRecorderStruct.h>
 
 
-DSFML_AUDIO_API sfSoundRecorder* sfSoundRecorder_create();
+DSFML_AUDIO_API sfSoundRecorder* sfSoundRecorder_create(SoundRecorderCallBacks* newCallBacks);
 
-DSFML_AUDIO_API void sfSoundRecorder_destroy(sfSoundRecorder* recorder);
+DSFML_AUDIO_API void sfSoundRecorder_destroy(sfSoundRecorder* soundRecorder);
 
-DSFML_AUDIO_API DBool sfSoundRecorder_initialize(sfSoundRecorder* recorder, DUint sampleRate);
+DSFML_AUDIO_API void sfSoundRecorder_start(sfSoundRecorder* soundRecorder, DUint sampleRate);
 
-DSFML_AUDIO_API void sfSoundRecorder_startCapture(sfSoundRecorder* recorder);
+DSFML_AUDIO_API void sfSoundRecorder_stop(sfSoundRecorder* soundRecorder);
 
-DSFML_AUDIO_API DInt sfSoundRecorder_getNumAvailableSamples(sfSoundRecorder* recorder);
+DSFML_AUDIO_API DUint sfSoundRecorder_getSampleRate(const sfSoundRecorder* soundRecorder);
 
-DSFML_AUDIO_API DShort* sfSoundRecorder_getSamplePointer(sfSoundRecorder* recorder, DInt numSamples);
-
-DSFML_AUDIO_API void sfSoundRecorder_stopCapture(sfSoundRecorder* recorder);
-
-DSFML_AUDIO_API void sfSoundRecorder_closeDevice(sfSoundRecorder* recorder);
-
-DSFML_AUDIO_API DBool sfSoundRecorder_isAvailable();
+DSFML_AUDIO_API DBool sfSoundRecorder_isAvailable(void);
 
 
 #endif // DSFML_SOUNDRECORDER_H

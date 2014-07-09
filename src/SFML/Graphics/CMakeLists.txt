@@ -162,8 +162,12 @@ if(COMPILER_GCC)
     set_source_files_properties(${SRCROOT}/ImageLoader.cpp PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 endif()
 
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DSFML_GRAPHICS_EXPORTS)
+endif()
+
 # define the sfml-graphics target
-sfml_add_library(sfml-graphics
+sfml_add_library(dsfml-graphics
                  SOURCES ${SRC} ${DRAWABLES_SRC} ${RENDER_TEXTURE_SRC} ${STB_SRC}
                  DEPENDS dsfml-window dsfml-system
                  EXTERNAL_LIBS ${GRAPHICS_EXT_LIBS})

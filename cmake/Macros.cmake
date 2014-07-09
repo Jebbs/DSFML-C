@@ -107,64 +107,64 @@ macro(sfml_add_library target)
     sfml_parse_arguments(THIS "SOURCES;DEPENDS;EXTERNAL_LIBS" "" ${ARGN})
 
     # create the target
-    add_library("d${target}" ${THIS_SOURCES})
+    add_library("${target}" ${THIS_SOURCES})
 
     # define the export symbol of the module
     string(REPLACE "-" "_" NAME_UPPER "${target}")
     string(TOUPPER "${NAME_UPPER}" NAME_UPPER)
-    set_target_properties("d${target}" PROPERTIES DEFINE_SYMBOL ${NAME_UPPER}_EXPORTS)
+    set_target_properties("${target}" PROPERTIES DEFINE_SYMBOL ${NAME_UPPER}_EXPORTS)
 
     # adjust the output file prefix/suffix to match our conventions
     if(BUILD_SHARED_LIBS)
         if(WINDOWS)
             # include the major version number in Windows shared library names (but not import library names)
-            set_target_properties("d${target}" PROPERTIES DEBUG_POSTFIX -d)
-            set_target_properties("d${target}" PROPERTIES SUFFIX "-${VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            set_target_properties("${target}" PROPERTIES DEBUG_POSTFIX -d)
+            set_target_properties("${target}" PROPERTIES SUFFIX "-${VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
         else()
-            set_target_properties("d${target}" PROPERTIES DEBUG_POSTFIX -d)
+            set_target_properties("${target}" PROPERTIES DEBUG_POSTFIX -d)
         endif()
         if (WINDOWS AND COMPILER_GCC)
             # on Windows/gcc get rid of "lib" prefix for shared libraries,
             # and transform the ".dll.a" suffix into ".a" for import libraries
-            set_target_properties("d${target}" PROPERTIES PREFIX "")
-            set_target_properties("d${target}" PROPERTIES IMPORT_SUFFIX ".a")
+            set_target_properties("${target}" PROPERTIES PREFIX "")
+            set_target_properties("${target}" PROPERTIES IMPORT_SUFFIX ".a")
         endif()
     else()
-        set_target_properties("d${target}" PROPERTIES DEBUG_POSTFIX -s-d)
-        set_target_properties("d${target}" PROPERTIES RELEASE_POSTFIX -s)
-        set_target_properties("d${target}" PROPERTIES MINSIZEREL_POSTFIX -s)
+        set_target_properties("${target}" PROPERTIES DEBUG_POSTFIX -s-d)
+        set_target_properties("${target}" PROPERTIES RELEASE_POSTFIX -s)
+        set_target_properties("${target}" PROPERTIES MINSIZEREL_POSTFIX -s)
     endif()
 
     # set the version and soversion of the target (for compatible systems -- mostly Linuxes)
-    set_target_properties("d${target}" PROPERTIES SOVERSION ${VERSION_MAJOR})
-    set_target_properties("d${target}" PROPERTIES VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+    set_target_properties("${target}" PROPERTIES SOVERSION ${VERSION_MAJOR})
+    set_target_properties("${target}" PROPERTIES VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
 
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
-    set_target_properties("d${target}" PROPERTIES FOLDER "SFML")
+    set_target_properties("${target}" PROPERTIES FOLDER "SFML")
 
     # for gcc >= 4.0 on Windows, apply the SFML_USE_STATIC_STD_LIBS option if it is enabled
     if(WINDOWS AND COMPILER_GCC AND SFML_USE_STATIC_STD_LIBS)
         if(NOT GCC_VERSION VERSION_LESS "4")
-            set_target_properties("d${target}" PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
+            set_target_properties("${target}" PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
         endif()
     endif()
 
     # if using gcc >= 4.0 or clang >= 3.0 on a non-Windows platform, we must hide public symbols by default
     # (exported ones are explicitely marked)
     if(NOT WINDOWS AND ((COMPILER_GCC AND NOT GCC_VERSION VERSION_LESS "4") OR (COMPILER_CLANG AND NOT CLANG_VERSION VERSION_LESS "3")))
-        set_target_properties("d${target}" PROPERTIES COMPILE_FLAGS -fvisibility=hidden)
+        set_target_properties("${target}" PROPERTIES COMPILE_FLAGS -fvisibility=hidden)
     endif()
 
     # link the target to its SFML dependencies
     if(THIS_DEPENDS)
-        target_link_libraries("d${target}" ${THIS_DEPENDS})
+        target_link_libraries("${target}" ${THIS_DEPENDS})
     endif()
 
     # build frameworks or dylibs
     if(MACOSX AND BUILD_SHARED_LIBS)
         if(SFML_BUILD_FRAMEWORKS)
             # adapt target to build frameworks instead of dylibs
-            set_target_properties("d${target}" PROPERTIES 
+            set_target_properties("${target}" PROPERTIES 
                                   FRAMEWORK TRUE
                                   FRAMEWORK_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
                                   MACOSX_FRAMEWORK_IDENTIFIER org.sfml-dev.${target}
@@ -173,7 +173,7 @@ macro(sfml_add_library target)
         endif()
         
         # adapt install directory to allow distributing dylibs/frameworks in user’s frameworks/application bundle
-        set_target_properties("d${target}" PROPERTIES 
+        set_target_properties("${target}" PROPERTIES 
                               BUILD_WITH_INSTALL_RPATH 1 
                               INSTALL_NAME_DIR "@executable_path/../Frameworks")
     endif()
@@ -182,16 +182,16 @@ macro(sfml_add_library target)
     if(THIS_EXTERNAL_LIBS)
         if(BUILD_SHARED_LIBS)
             # in shared build, we use the regular linker commands
-            target_link_libraries("d${target}" ${THIS_EXTERNAL_LIBS})
+            target_link_libraries("${target}" ${THIS_EXTERNAL_LIBS})
         else()
             # in static build there's no link stage, but with some compilers it is possible to force
             # the generated static library to directly contain the symbols from its dependencies
-            sfml_static_add_libraries("d${target}" ${THIS_EXTERNAL_LIBS})
+            sfml_static_add_libraries("${target}" ${THIS_EXTERNAL_LIBS})
         endif()
     endif()
 
     # add the install rule
-    install(TARGETS "d${target}"
+    install(TARGETS "${target}"
             RUNTIME DESTINATION bin COMPONENT bin
             LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT bin 
             ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT devel

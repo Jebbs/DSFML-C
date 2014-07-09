@@ -80,8 +80,12 @@ if(WINDOWS)
     set(NETWORK_EXT_LIBS ${NETWORK_EXT_LIBS} ws2_32)
 endif()
 
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DSFML_NETWORK_EXPORTS)
+endif()
+
 # define the sfml-network target
-sfml_add_library(sfml-network
+sfml_add_library(dsfml-network
                  SOURCES ${SRC}
                  DEPENDS dsfml-system
                  EXTERNAL_LIBS ${NETWORK_EXT_LIBS})

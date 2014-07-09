@@ -32,11 +32,61 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 #define DSFML_SOUNDRECORDER_STRUCT_H
 
 //Headers
-#include <DSFML/Audio/InternalSoundRecorder.hpp>
+#include <SFML/Audio/SoundRecorder.hpp>
+#include <DSFML/Config.h>
+
+
+
+//class to use in D
+class SoundRecorderCallBacks
+{
+public:
+	virtual DBool onStart();
+
+    virtual DBool onProcessSamples(const DShort* samples, std::size_t sampleCount);
+
+    virtual void onStop();
+};
+
+
+class SoundRecorderImp: public sf::SoundRecorder
+{
+private:
+	SoundRecorderCallBacks* callBacks;
+
+public:
+	SoundRecorderImp(SoundRecorderCallBacks* newCallBacks):
+	callBacks(newCallBacks)
+	{
+		//callBacks = newCallBacks;
+	}
+protected:
+	virtual bool onStart()
+	{
+		return (callBacks->onStart() == DTrue);
+	}
+
+	virtual bool onProcessSamples(const sf::Int16* samples, std::size_t sampleCount)
+	{
+		callBacks->onProcessSamples(samples, sampleCount);
+	}
+
+	virtual void onStop()
+	{
+		callBacks->onStop();
+	}
+
+};
 
 //Wrapper around an InternalSoundRecorder
 struct sfSoundRecorder
 {
-    InternalSoundRecorder This;
+	sfSoundRecorder(SoundRecorderCallBacks* newCallBacks):
+	This(newCallBacks)
+	{
+
+	}
+
+    SoundRecorderImp This;
 };
 #endif // DSFML_SOUNDRECORDER_STRUCT_H

@@ -33,6 +33,63 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <DSFML/Audio/Export.h>
+#include <DSFML/Audio/SoundStreamStruct.h>
+
+DSFML_AUDIO_API sfSoundStream* sfSoundStream_create( DUint channelCount, DUint sampleRate, SoundStreamCallBacks* callBacks);// add a link to the methods?!
+
+DSFML_AUDIO_API void sfSoundStream_destroy(sfSoundStream* soundStream);
+
+DSFML_AUDIO_API void sfSoundStream_play(sfSoundStream* soundStream);
+
+DSFML_AUDIO_API void sfSoundStream_pause(sfSoundStream* soundStream);
+
+DSFML_AUDIO_API void sfSoundStream_stop(sfSoundStream* soundStream);
+
+DSFML_AUDIO_API DInt sfSoundStream_getStatus(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API DUint sfSoundStream_getChannelCount(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API DUint sfSoundStream_getSampleRate(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API void sfSoundStream_setPitch(sfSoundStream* soundStream, float pitch);
+
+DSFML_AUDIO_API void sfSoundStream_setVolume(sfSoundStream* soundStream, float volume);
+
+DSFML_AUDIO_API void sfSoundStream_setPosition(sfSoundStream* soundStream, float positionX, float positionY, float positionZ);
+
+DSFML_AUDIO_API void sfSoundStream_setRelativeToListener(sfSoundStream* soundStream, DBool relative);
+
+DSFML_AUDIO_API void sfSoundStream_setMinDistance(sfSoundStream* soundStream, float distance);
+
+DSFML_AUDIO_API void sfSoundStream_setAttenuation(sfSoundStream* soundStream, float attenuation);
+
+DSFML_AUDIO_API void sfSoundStream_setPlayingOffset(sfSoundStream* soundStream, DLong timeOffset);
+
+DSFML_AUDIO_API void sfSoundStream_setLoop(sfSoundStream* soundStream, DBool loop);
+
+DSFML_AUDIO_API float sfSoundStream_getPitch(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API float sfSoundStream_getVolume(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API void sfSoundStream_getPosition(const sfSoundStream* soundStream, float* positionX, float* positionY, float* positionZ);
+
+DSFML_AUDIO_API DBool sfSoundStream_isRelativeToListener(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API float sfSoundStream_getMinDistance(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API float sfSoundStream_getAttenuation(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API DBool sfSoundStream_getLoop(const sfSoundStream* soundStream);
+
+DSFML_AUDIO_API DLong sfSoundStream_getPlayingOffset(const sfSoundStream* soundStream);
+
+
+//////
+//Old Methods
+//////
+
+
+/*
 
 //Get the format of the stream from the channel count
 DSFML_AUDIO_API DUint sfSoundStream_getFormatFromChannelCount(DUint channelCount);
@@ -73,5 +130,5 @@ DSFML_AUDIO_API void sfSoundStream_fillBuffer(DUint bufferID, const DShort* samp
 //Put a buffer in the playing queue
 DSFML_AUDIO_API void sfSoundStream_queueBuffer(DUint sourceID, DUint* bufferID);
 
-
+*/
 #endif // DSFML_SOUNDSTREAM_H

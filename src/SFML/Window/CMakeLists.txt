@@ -144,8 +144,12 @@ elseif(MACOSX)
     set(WINDOW_EXT_LIBS ${WINDOW_EXT_LIBS} "-framework Foundation -framework AppKit -framework IOKit -framework Carbon")
 endif()
 
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DSFML_WINDOW_EXPORTS)
+endif()
+
 # define the sfml-window target
-sfml_add_library(sfml-window
+sfml_add_library(dsfml-window
                  SOURCES ${SRC} ${PLATFORM_SRC}
                  DEPENDS dsfml-system
                  EXTERNAL_LIBS ${WINDOW_EXT_LIBS})

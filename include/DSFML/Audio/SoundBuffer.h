@@ -33,7 +33,38 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <DSFML/Audio/Export.h>
+#include <DSFML/System/DStream.hpp>
+#include <DSFML/Audio/Types.h>
+#include <stddef.h>
 
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_create();
+
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_createFromFile(const char* filename);
+
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_createFromMemory(const void* data, size_t sizeInBytes);
+
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_createFromStream(DStream* stream);
+
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_createFromSamples(const DShort* samples, size_t sampleCount, DUint channelCount, DUint sampleRate);
+
+DSFML_AUDIO_API sfSoundBuffer* sfSoundBuffer_copy(const sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API void sfSoundBuffer_destroy(sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API DBool sfSoundBuffer_saveToFile(const sfSoundBuffer* soundBuffer, const char* filename);
+
+DSFML_AUDIO_API const DShort* sfSoundBuffer_getSamples(const sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API size_t sfSoundBuffer_getSampleCount(const sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API DUint sfSoundBuffer_getSampleRate(const sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API DUint sfSoundBuffer_getChannelCount(const sfSoundBuffer* soundBuffer);
+
+DSFML_AUDIO_API DLong sfSoundBuffer_getDuration(const sfSoundBuffer* soundBuffer);
+
+
+/*
 //Generate a new buffer
 DSFML_AUDIO_API void sfSoundBuffer_alGenBuffers(DUint* bufferID);
 
@@ -49,5 +80,5 @@ DSFML_AUDIO_API DUint sfSoundBuffer_getChannelCount(DUint bufferID);
 //Fill the buffer up with samples
 DSFML_AUDIO_API void sfSoundBuffer_fillBuffer(DUint bufferID, DShort* samples, DLong sampleSize, DUint sampleRate, DUint format);
 
-
+*/
 #endif // DSFML_SOUNDBUFFER_H

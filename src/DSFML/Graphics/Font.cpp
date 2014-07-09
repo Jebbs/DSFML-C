@@ -43,7 +43,7 @@ sfFont* sfFont_createFromFile(const char* filename)
     if (!font->This.loadFromFile(filename))
     {
         delete font;
-        font = 0;
+        font = NULL;
         return font;
     }
 
@@ -60,7 +60,7 @@ sfFont* sfFont_createFromMemory(const void* data, size_t sizeInBytes)
     if (!font->This.loadFromMemory(data, sizeInBytes))
     {
         delete font;
-        font = 0;
+        font = NULL;
         return font;
     }
 
@@ -82,7 +82,7 @@ sfFont* sfFont_createFromStream(DStream* stream)
     if (!font->This.loadFromStream(font->Stream))
     {
         delete font;
-        font = 0;
+        font = NULL;
         return font;
     }
 

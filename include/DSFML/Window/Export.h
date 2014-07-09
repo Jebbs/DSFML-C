@@ -35,9 +35,14 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 #include <DSFML/Config.h>
 
 
+//If we define DSFML_WINDOW_EXPORTS
+#if defined(DSFML_WINDOW_EXPORTS)
+	//We need to make sure the SFML_WINDOW_EXPORTS is defined as well
+	
+#endif
 
-// Define portable export macro
-#define DSFML_WINDOW_API DSFML_API_EXPORT
+//Then we define out D export. Will work for shared and static builds (since for static SFML_API_EXPORT is just empty)
+#define DSFML_WINDOW_API extern "C" SFML_API_EXPORT
 
 
 

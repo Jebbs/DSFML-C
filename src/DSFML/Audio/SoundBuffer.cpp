@@ -30,8 +30,110 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Headers
 #include <DSFML/Audio/SoundBuffer.h>
-#include <SFML/Audio/ALCheck.hpp>
+#include <DSFML/Audio/SoundBufferStruct.h>
 
+sfSoundBuffer* sfSoundBuffer_create()
+{
+    return new sfSoundBuffer;
+}
+
+sfSoundBuffer* sfSoundBuffer_createFromFile(const char* filename)
+{
+    sfSoundBuffer* buffer = new sfSoundBuffer;
+
+    if (!buffer->This.loadFromFile(filename))
+    {
+        delete buffer;
+        buffer = NULL;
+    }
+
+    return buffer;
+}
+
+sfSoundBuffer* sfSoundBuffer_createFromMemory(const void* data, size_t sizeInBytes)
+{
+    sfSoundBuffer* buffer = new sfSoundBuffer;
+
+    if (!buffer->This.loadFromMemory(data, sizeInBytes))
+    {
+        delete buffer;
+        buffer = NULL;
+    }
+
+    return buffer;
+}
+
+sfSoundBuffer* sfSoundBuffer_createFromStream(DStream* stream)
+{
+    sfSoundBuffer* buffer = new sfSoundBuffer;
+
+    sfmlStream Stream = sfmlStream(stream);
+
+    if (!buffer->This.loadFromStream(Stream))
+    {
+        delete buffer;
+        buffer = NULL;
+    }
+
+    return buffer;
+}
+
+sfSoundBuffer* sfSoundBuffer_createFromSamples(const DShort* samples, size_t sampleCount, DUint channelCount, DUint sampleRate)
+{
+    sfSoundBuffer* buffer = new sfSoundBuffer;
+
+    if (!buffer->This.loadFromSamples(samples, sampleCount, channelCount, sampleRate))
+    {
+        delete buffer;
+        buffer = NULL;
+    }
+
+    return buffer;
+}
+
+sfSoundBuffer* sfSoundBuffer_copy(const sfSoundBuffer* soundBuffer)
+{
+     return new sfSoundBuffer(*soundBuffer);
+}
+
+void sfSoundBuffer_destroy(sfSoundBuffer* soundBuffer)
+{
+    delete soundBuffer;
+}
+
+DBool sfSoundBuffer_saveToFile(const sfSoundBuffer* soundBuffer, const char* filename)
+{
+    return (soundBuffer->This.saveToFile(filename))? DTrue: DFalse;
+}
+
+const DShort* sfSoundBuffer_getSamples(const sfSoundBuffer* soundBuffer)
+{
+    return soundBuffer->This.getSamples();
+}
+
+size_t sfSoundBuffer_getSampleCount(const sfSoundBuffer* soundBuffer)
+{
+    return soundBuffer->This.getSampleCount();
+}
+
+DUint sfSoundBuffer_getSampleRate(const sfSoundBuffer* soundBuffer)
+{
+    return soundBuffer->This.getSampleRate();
+}
+
+DUint sfSoundBuffer_getChannelCount(const sfSoundBuffer* soundBuffer)
+{
+    soundBuffer->This.getChannelCount();
+}
+
+DLong sfSoundBuffer_getDuration(const sfSoundBuffer* soundBuffer)
+{
+    return soundBuffer->This.getDuration().asMicroseconds();
+}
+
+
+
+/*
 void sfSoundBuffer_alGenBuffers(DUint* bufferID)
 {
     alCheck(alGenBuffers(1, bufferID));
@@ -63,3 +165,4 @@ void sfSoundBuffer_fillBuffer(DUint bufferID, DShort* samples, DLong sampleSize,
     ALsizei size = static_cast<ALsizei>( sampleSize* sizeof(DShort));
     alCheck(alBufferData(bufferID, format, samples, size, sampleRate));
 }
+*/

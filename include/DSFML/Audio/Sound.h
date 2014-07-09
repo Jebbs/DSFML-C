@@ -33,24 +33,57 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 
 //Header
 #include <DSFML/Audio/Export.h>
+#include <DSFML/Audio/Types.h>
 
 
-//Assign a buffer to the sound
-DSFML_AUDIO_API void sfSound_assignBuffer(DUint sourceID, DUint bufferID);
+DSFML_AUDIO_API sfSound* sfSound_create(void);
 
-//Detach any buffer associated to the sound
-DSFML_AUDIO_API void sfSound_detachBuffer(DUint sourceID);
+DSFML_AUDIO_API sfSound* sfSound_copy(const sfSound* sound);
 
-//Set if the sound should loop or not
-DSFML_AUDIO_API void sfSound_setLoop(DUint sourceID,DBool loop);
+DSFML_AUDIO_API void sfSound_destroy(sfSound* sound);
 
-//check if the sound is looping or not
-DSFML_AUDIO_API DBool sfSound_getLoop(DUint sourceID);
+DSFML_AUDIO_API void sfSound_play(sfSound* sound);
 
-//Set the playing offset for the sound
-DSFML_AUDIO_API void sfSound_setPlayingOffset(DUint sourceID, float offset);
+DSFML_AUDIO_API void sfSound_pause(sfSound* sound);
 
-//Get the playing offset for the sound
-DSFML_AUDIO_API float sfSound_getPlayingOffset(DUint sourceID);
+DSFML_AUDIO_API void sfSound_stop(sfSound* sound);
+
+DSFML_AUDIO_API void sfSound_setBuffer(sfSound* sound, const sfSoundBuffer* buffer);
+
+//DSFML_AUDIO_API sfSoundBuffer* sfSound_getBuffer(const sfSound* sound);
+
+DSFML_AUDIO_API void sfSound_setLoop(sfSound* sound, DBool loop);
+
+DSFML_AUDIO_API DBool sfSound_getLoop(const sfSound* sound);
+
+DSFML_AUDIO_API int sfSound_getStatus(const sfSound* sound);
+
+DSFML_AUDIO_API void sfSound_setPitch(sfSound* sound, float pitch);
+
+DSFML_AUDIO_API void sfSound_setVolume(sfSound* sound, float volume);
+
+DSFML_AUDIO_API void sfSound_setPosition(sfSound* sound, float positionX, float positionY, float positionZ);
+
+DSFML_AUDIO_API void sfSound_setRelativeToListener(sfSound* sound, DBool relative);
+
+DSFML_AUDIO_API void sfSound_setMinDistance(sfSound* sound, float distance);
+
+DSFML_AUDIO_API void sfSound_setAttenuation(sfSound* sound, float attenuation);
+
+DSFML_AUDIO_API void sfSound_setPlayingOffset(sfSound* sound, DLong timeOffset);
+
+DSFML_AUDIO_API float sfSound_getPitch(const sfSound* sound);
+
+DSFML_AUDIO_API float sfSound_getVolume(const sfSound* sound);
+
+DSFML_AUDIO_API void sfSound_getPosition(const sfSound* sound, float* positionX, float* positionY, float* positionZ);
+
+DSFML_AUDIO_API DBool sfSound_isRelativeToListener(const sfSound* sound);
+
+DSFML_AUDIO_API float sfSound_getMinDistance(const sfSound* sound);
+
+DSFML_AUDIO_API float sfSound_getAttenuation(const sfSound* sound);
+
+DSFML_AUDIO_API DLong sfSound_getPlayingOffset(const sfSound* sound);
 
 #endif // DSFML_SOUND_H

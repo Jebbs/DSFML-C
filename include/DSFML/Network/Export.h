@@ -34,9 +34,15 @@ All Libraries used by SFML
 // Headers
 #include <DSFML/Config.h>
 
+//If we define DSFML_NETWORK_EXPORTS
+#if defined(DSFML_NETWORK_EXPORTS)
+	//We need to make sure the SFML_NETWORK_EXPORTS is defined as well
+	//#define SFML_NETWORK_EXPORTS 
+#endif
 
+//Then we define out D export. Will work for shared and static builds (since for static SFML_API_EXPORT is just empty)
+#define DSFML_NETWORK_API extern "C" SFML_API_EXPORT
 
-#define DSFML_NETWORK_API DSFML_API_EXPORT
 
 
 

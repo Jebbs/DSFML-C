@@ -31,50 +31,34 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 //Headers
 #include <DSFML/Audio/SoundRecorder.h>
 #include <DSFML/Audio/SoundRecorderStruct.h>
-#include <DSFML/Audio/InternalSoundRecorder.hpp>
 
 
-sfSoundRecorder* sfSoundRecorder_create()
+sfSoundRecorder* sfSoundRecorder_create(SoundRecorderCallBacks* newCallBacks)
 {
-    return new sfSoundRecorder();
+	return new sfSoundRecorder(newCallBacks);
 }
 
-void sfSoundRecorder_destroy(sfSoundRecorder* recorder)
+void sfSoundRecorder_destroy(sfSoundRecorder* soundRecorder)
 {
-    delete recorder;
+	delete soundRecorder;
 }
 
-DBool sfSoundRecorder_initialize(sfSoundRecorder* recorder,DUint sampleRate)
+void sfSoundRecorder_start(sfSoundRecorder* soundRecorder, DUint sampleRate)
 {
-    return recorder->This.initialize(sampleRate);
+	soundRecorder->This.start(sampleRate);
 }
 
-void sfSoundRecorder_startCapture(sfSoundRecorder* recorder)
+void sfSoundRecorder_stop(sfSoundRecorder* soundRecorder)
 {
-    recorder->This.startCapture();
+	soundRecorder->This.stop();
 }
 
-DInt sfSoundRecorder_getNumAvailableSamples(sfSoundRecorder* recorder)
+DUint sfSoundRecorder_getSampleRate(const sfSoundRecorder* soundRecorder)
 {
-    return recorder->This.getSampleNumber();
+	soundRecorder->This.getSampleRate();
 }
 
-DShort* sfSoundRecorder_getSamplePointer(sfSoundRecorder* recorder, DInt numSamples)
+DBool sfSoundRecorder_isAvailable(void)
 {
-    return recorder->This.getSamplePointer(numSamples);
-}
-
-void sfSoundRecorder_stopCapture(sfSoundRecorder* recorder)
-{
-    recorder->This.stopCapture();
-}
-
-void sfSoundRecorder_closeDevice(sfSoundRecorder* recorder)
-{
-    recorder->This.closeDevice();
-}
-
-DBool sfSoundRecorder_isAvailable()
-{
-    return InternalSoundRecorder::isAvailable();
+	return sf::SoundRecorder::isAvailable() ? DTrue : DFalse;
 }

@@ -27,8 +27,7 @@
 
 #include <SFML/Config.hpp>
 
-//DSFML only needs to export its symbols(It doesn't use headers)
-#define DSFML_API_EXPORT extern "C" SFML_API_EXPORT
+
 
 
 ////////////////////////////////////////////////////////////

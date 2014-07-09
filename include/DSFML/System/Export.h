@@ -34,9 +34,15 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 //Headers
 #include <DSFML/Config.h>
 
+//If we define DSFML_SYSTEM_EXPORTS
+#if defined(DSFML_SYSTEM_EXPORTS)
+	//We need to make sure the SFML_SYSTEM_EXPORTS is defined as well
+	//#define SFML_SYSTEM_EXPORTS 
+#endif
 
-// Define export macro only
-#define DSFML_SYSTEM_API DSFML_API_EXPORT
+//Then we define out D export. Will work for shared and static builds (since for static SFML_API_EXPORT is just empty)
+#define DSFML_SYSTEM_API extern "C" SFML_API_EXPORT
+
 
 
 #endif // DSFML_SYSTEM_EXPORT_H

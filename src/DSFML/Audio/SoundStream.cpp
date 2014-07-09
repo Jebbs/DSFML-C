@@ -31,114 +31,132 @@ All Libraries used by SFML - For a full list see http://www.sfml-dev.org/license
 //Headers
 #include <DSFML/Audio/SoundStream.h>
 #include <SFML/Audio/SoundSource.hpp>
-#include <SFML/Audio/ALCheck.hpp>
-#include <SFML/Audio/AudioDevice.hpp>
 #include <SFML/System/Time.hpp>
+#include <SFML/System/Vector3.hpp>
 
-DUint sfSoundStream_getFormatFromChannelCount(DUint channelCount)
+
+
+sfSoundStream* sfSoundStream_create( DUint channelCount, DUint sampleRate, SoundStreamCallBacks* callBacks)
 {
-    return sf::priv::AudioDevice::getFormatFromChannelCount(channelCount);
+    return new sfSoundStream(channelCount, sampleRate, callBacks);
 }
 
-void sfSoundStream_alSourcePlay(DUint sourceID)
+void sfSoundStream_destroy(sfSoundStream* soundStream)
 {
-    //Note: In debug builds, alCheck will insert priv::alCheckError(__FILE__, __LINE__)
-    //to check for errors. Using namespace sf makes sure that we are already in
-    //sf so that using namespace priv doesn't give errors.
-    using namespace sf;
-    alCheck(alSourcePlay(sourceID));
+    delete soundStream;
 }
 
-void sfSoundStream_alSourcePause(DUint sourceID)
+void sfSoundStream_play(sfSoundStream* soundStream)
 {
-    using namespace sf;
-    alCheck(alSourcePause(sourceID));
+    soundStream->This.play();
 }
 
-void sfSoundStream_alSourceStop(DUint sourceID)
+void sfSoundStream_pause(sfSoundStream* soundStream)
 {
-    using namespace sf;
-    alCheck(alSourceStop(sourceID));
+    soundStream->This.pause();
 }
 
-void sfSoundStream_alGenBuffers(DInt bufferCount, DUint* buffers)
+void sfSoundStream_stop(sfSoundStream* soundStream)
 {
-    using namespace sf;
-    alCheck(alGenBuffers(bufferCount, buffers));
+    soundStream->This.stop();
 }
 
-
-void sfSoundStream_deleteBuffers(DUint sourceID, DInt bufferCount, DUint* buffers)
+DInt sfSoundStream_getStatus(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-    alCheck(alSourcei(sourceID, AL_BUFFER, 0));
-    alCheck(alDeleteBuffers(bufferCount, buffers));
+    return static_cast<DInt>(soundStream->This.getStatus());
 }
 
-DLong sfSoundStream_getPlayingOffset(DUint sourceID,DLong samplesProcessed,  DUint theSampleRate, DUint theChannelCount)
+DUint sfSoundStream_getChannelCount(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-    ALfloat secs = 0.f;
-    alCheck(alGetSourcef(sourceID, AL_SEC_OFFSET, &secs));
-
-    return sf::seconds(secs + static_cast<float>(samplesProcessed) / theSampleRate / theChannelCount).asMicroseconds();
+    return soundStream->This.getChannelCount();
 }
 
-
-void sfSoundStream_clearQueue(DUint sourceID)
+DUint sfSoundStream_getSampleRate(const sfSoundStream* soundStream)
 {
-    using namespace sf;
+    return soundStream->This.getSampleRate();
+}
 
-    // Get the number of buffers still in the queue
-    ALint nbQueued;
-    alCheck(alGetSourcei(sourceID, AL_BUFFERS_QUEUED, &nbQueued));
+void sfSoundStream_setPitch(sfSoundStream* soundStream, float pitch)
+{
+    soundStream->This.setPitch(pitch);
+}
 
-    // Unqueue them all
-    ALuint buffer;
-    for (ALint i = 0; i < nbQueued; ++i)
-    {
-        alCheck(alSourceUnqueueBuffers(sourceID, 1, &buffer));
-    }
+void sfSoundStream_setVolume(sfSoundStream* soundStream, float volume)
+{
+    soundStream->This.setVolume(volume);
+}
+
+void sfSoundStream_setPosition(sfSoundStream* soundStream, float positionX, float positionY, float positionZ)
+{
+    soundStream->This.setPosition(sf::Vector3f(positionX, positionY, positionZ));
+}
+
+void sfSoundStream_setRelativeToListener(sfSoundStream* soundStream, DBool relative)
+{
+    (relative == DTrue)? soundStream->This.setRelativeToListener(true) : soundStream->This.setRelativeToListener(false);
+}
+
+void sfSoundStream_setMinDistance(sfSoundStream* soundStream, float distance)
+{
+    soundStream->This.setMinDistance(distance);
+}
+
+void sfSoundStream_setAttenuation(sfSoundStream* soundStream, float attenuation)
+{
+    soundStream->This.setAttenuation(attenuation);
+}
+
+void sfSoundStream_setPlayingOffset(sfSoundStream* soundStream, DLong timeOffset)
+{
+    soundStream->This.setPlayingOffset(sf::microseconds(timeOffset));
+}
+
+void sfSoundStream_setLoop(sfSoundStream* soundStream, DBool loop)
+{
+    (loop == DTrue)? soundStream->This.setLoop(true): soundStream->This.setLoop(false);
+}
+
+float sfSoundStream_getPitch(const sfSoundStream* soundStream)
+{
+    return soundStream->This.getPitch();
+}
+
+float sfSoundStream_getVolume(const sfSoundStream* soundStream)
+{
+    return soundStream->This.getVolume();
+}
+
+void sfSoundStream_getPosition(const sfSoundStream* soundStream, float* positionX, float* positionY, float* positionZ)
+{
+    sf::Vector3f position = soundStream->This.getPosition();
+
+    *positionX = position.x;
+    *positionY = position.y;
+    *positionZ = position.z;
 
 }
 
-DInt sfSoundStream_getNumberOfBuffersProccessed(DUint sourceID)
+DBool sfSoundStream_isRelativeToListener(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-    ALint nbProcessed = 0;
-    alCheck(alGetSourcei(sourceID, AL_BUFFERS_PROCESSED, &nbProcessed));
-    return nbProcessed;
+    return (soundStream->This.isRelativeToListener())? DTrue: DFalse;
 }
 
-DUint sfSoundStream_UnqueueBuffer(DUint sourceID)
+float sfSoundStream_getMinDistance(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-    ALuint buffer;
-    alCheck(alSourceUnqueueBuffers(sourceID, 1, &buffer));
-    return buffer;
+    return soundStream->This.getMinDistance();
 }
 
-DInt sfSoundStream_getBufferSampleSize(DUint bufferID)
+float sfSoundStream_getAttenuation(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-    ALint size, bits;
-    alCheck(alGetBufferi(bufferID, AL_SIZE, &size));
-    alCheck(alGetBufferi(bufferID, AL_BITS, &bits));
-    return size / (bits / 8);
+    return soundStream->This.getAttenuation();
 }
 
-void sfSoundStream_fillBuffer(DUint bufferID, const DShort* samples, DLong sampleCount, DUint soundFormat, DUint sampleRate)
+DBool sfSoundStream_getLoop(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-
-    ALsizei size = static_cast<ALsizei>(sampleCount) * sizeof(DShort);
-    alCheck(alBufferData(bufferID, soundFormat, samples, size, sampleRate));
+    return (soundStream->This.getLoop())? DTrue: DFalse;
 }
 
-void sfSoundStream_queueBuffer(DUint sourceID, DUint* bufferID)
+DLong sfSoundStream_getPlayingOffset(const sfSoundStream* soundStream)
 {
-    using namespace sf;
-     alCheck(alSourceQueueBuffers(sourceID, 1, bufferID));
+    return soundStream->This.getPlayingOffset().asMicroseconds();
 }
-
-
