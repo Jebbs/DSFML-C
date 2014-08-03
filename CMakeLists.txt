@@ -158,10 +158,10 @@ else()
     list(APPEND SFML_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp)
 
     # create SFML.framework
-    add_library(SFML ${SFML_SOURCES})
+    add_library(DSFML ${SFML_SOURCES})
 
     # edit target properties
-    set_target_properties(SFML PROPERTIES 
+    set_target_properties(DSFML PROPERTIES 
                           FRAMEWORK TRUE
                           FRAMEWORK_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
                           MACOSX_FRAMEWORK_IDENTIFIER org.sfml-dev.SFML
@@ -170,18 +170,18 @@ else()
                           PUBLIC_HEADER "${SFML_HEADERS}")
 
     # add the remaining headers
-    add_custom_command(TARGET SFML 
+    add_custom_command(TARGET DSFML 
                        POST_BUILD
-                       COMMAND cp -r ${PROJECT_SOURCE_DIR}/include/SFML/* SFML.framework/Versions/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}/Headers)
+                       COMMAND cp -r ${PROJECT_SOURCE_DIR}/include/SFML/* DSFML.framework/Versions/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}/Headers)
 
     # adapt install directory to allow distributing dylibs/frameworks in user’s frameworks/application bundle
-    # NOTE : it's not required to link agains SFML.framework
-    set_target_properties(SFML PROPERTIES 
+    # NOTE : it's not required to link agains DSFML.framework
+    set_target_properties(DSFML PROPERTIES 
                           BUILD_WITH_INSTALL_RPATH 1 
                           INSTALL_NAME_DIR "@executable_path/../Frameworks")
 
     # install rule
-    install(TARGETS SFML
+    install(TARGETS DSFML
             FRAMEWORK DESTINATION ${CMAKE_INSTALL_FRAMEWORK_PREFIX}
             COMPONENT devel)
 endif()
