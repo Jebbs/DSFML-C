@@ -187,8 +187,8 @@ else()
 endif()
 
 install(FILES cmake/Modules/FindSFML.cmake DESTINATION ${INSTALL_MISC_DIR}/cmake/Modules)
-install(FILES license.txt DESTINATION ${INSTALL_MISC_DIR})
-install(FILES readme.txt DESTINATION ${INSTALL_MISC_DIR})
+#install(FILES license.txt DESTINATION ${INSTALL_MISC_DIR})
+#install(FILES readme.txt DESTINATION ${INSTALL_MISC_DIR})
 
 if(WINDOWS)
     if(ARCH_32BITS)
